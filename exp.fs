@@ -19,6 +19,7 @@ val it : int = 21
 type exp = CstI of int
          | Prim of string * exp * exp
          | Var of string
+         | Let of string * exp * exp
 
 let rec lookup x env =
     match env with
@@ -37,5 +38,6 @@ let rec eval e env =
                            if v2 = 0 then failwith "You gave me a ZERO!!!"
                            else v1 / v2
     | Prim(_, e1, e2) -> failwith "Operator no recognized."
-    
-            
+    | Let(x, e1, e2) -> let v = eval e1 env
+                        let env' = (x, v)::env
+                        eval e2 env'    
