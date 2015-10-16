@@ -1,18 +1,24 @@
 module Exp
 
-(* To run in fsharpi:
+(* To run, do in the terminal:
 
-> #load "exp.fs";;
-...
-> #load "exp-examples.fs";;
-...
-> open Exp;;
+$ make
+
+This will compile the files and start an fsharpi
+session with necessary files loaded.
+
+In the fsharpi prompt:
+
 > open ExpExamples;;
-
-> eval example1 [];;
+> tokenize "17 + let x = 5 in x * x end";;
+val it : Parser.token list =
+  [CSTINT 17; PLUS; LET; NAME "x"; EQ; CSTINT 5; IN; NAME "x"; TIMES; NAME "x";
+   END; EOF]
+> fromString "17 + let x = 5 in x * x end";;
+val it : Exp.exp =
+  Prim ("+",CstI 17,Let ("x",CstI 5,Prim ("*",Var "x",Var "x")))
+> run "17 + let x = 5 in x * x end";;       
 val it : int = 42
-> eval example4 initialEnv;;
-val it : int = 21
 
 *)
 

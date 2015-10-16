@@ -1,0 +1,39 @@
+%{
+ (*
+   Grammar for the Exp language.
+ *)
+ open Exp;
+ 
+%}
+
+%token <int> CSTINT
+%token <string> NAME
+
+%token PLUS MINUS TIMES DIV
+%token LPAR RPAR
+%token LET EQ IN END
+%token EOF
+
+%left PLUS MINUS
+%left TIMES DIV
+
+%start Main
+%type <Exp.exp> Main Expr 
+
+%%
+
+Main:
+    Expr EOF                            { $1 }
+;
+
+Expr:
+  | CSTINT                              { CstI($1)               }
+  | NAME                                { Var $1                 }
+  | LPAR Expr RPAR                      { $2                     }
+  | Expr PLUS  Expr                     { Prim("+",  $1, $3)     }
+  | Expr MINUS Expr                     { Prim("-",  $1, $3)     }
+  | Expr TIMES Expr                     { Prim("*",  $1, $3)     }
+  | Expr DIV   Expr                     { Prim("/",  $1, $3)     }
+  | LET NAME EQ Expr IN Expr END        { Let($2, $4, $6)        }
+;
+
