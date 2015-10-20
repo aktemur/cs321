@@ -26,6 +26,10 @@ rule Token = parse
   | "let"           { LET }
   | "in"            { IN }
   | "end"            { END }
+  | "min"           { MIN }
+  | "if"            { IF }
+  | "then"          { THEN }
+  | "else"          { ELSE }
   | ['a'-'z''A'-'Z']['a'-'z''A'-'Z''0'-'9']*
                     { NAME (lexemeAsString lexbuf) }
   | "(*"            { commentStart := lexbuf.StartPos;
@@ -38,6 +42,8 @@ rule Token = parse
   | '('             { LPAR }
   | ')'             { RPAR }
   | '='             { EQ }
+  | ','             { COMMA }
+  | '<'             { LESS }
   | eof             { EOF }
   | _               { failwith "Lexer error: illegal symbol" }
 
