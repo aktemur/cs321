@@ -23,6 +23,7 @@ val it : int = 42
 *)
 
 type exp = CstI of int
+         | CstB of bool
          | Prim of string * exp * exp
          | Var of string
          | Let of string * exp * exp
@@ -42,6 +43,7 @@ let rec lookup x env =
 let rec eval e env =
     match e with
     | CstI i -> i
+    | CstB b -> if b then 1 else 0
     | Var x -> match lookup x env with
                | Int i -> i
                | Closure (f,x,e1,env') -> failwith "Supporting first-order functions only."
@@ -55,6 +57,10 @@ let rec eval e env =
                                  if v1 < v2 then v1 else v2
     | Prim("<", e1, e2) -> let v1, v2 = (eval e1 env), (eval e2 env)
                            if v1 < v2 then 1 else 0
+    | Prim("&&", e1, e2) -> let v1 = (eval e1 env)
+                            if v1 = 0 then 0 else (eval e2 env)
+    | Prim("||", e1, e2) -> let v1 = (eval e1 env)
+                            if v1 = 1 then 1 else (eval e2 env)
     | Prim(_, e1, e2) -> failwith "Operator no recognized."
     | If(e1,e2,e3) -> if (eval e1 env) = 0 then eval e3 env else eval e2 env
     | Let(x, e1, e2) -> let v = eval e1 env
