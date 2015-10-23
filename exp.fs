@@ -26,7 +26,12 @@ type exp = CstI of int
          | Prim of string * exp * exp
          | Var of string
          | Let of string * exp * exp
-         | If of exp * exp * exp 
+         | LetFun of string * string * exp * exp
+         | If of exp * exp * exp
+         | Call of string * exp
+
+type value = Int of int
+           | Closure of string * string * exp * ((string * value) list)
 
 let rec lookup x env =
     match env with
@@ -37,7 +42,9 @@ let rec lookup x env =
 let rec eval e env =
     match e with
     | CstI i -> i
-    | Var x -> lookup x env 
+    | Var x -> match lookup x env with
+               | Int i -> i
+               | Closure (f,x,e1,env') -> failwith "Supporting first-order functions only."
     | Prim("+", e1, e2) -> eval e1 env + eval e2 env
     | Prim("-", e1, e2) -> eval e1 env - eval e2 env
     | Prim("*", e1, e2) -> eval e1 env * eval e2 env
@@ -51,5 +58,18 @@ let rec eval e env =
     | Prim(_, e1, e2) -> failwith "Operator no recognized."
     | If(e1,e2,e3) -> if (eval e1 env) = 0 then eval e3 env else eval e2 env
     | Let(x, e1, e2) -> let v = eval e1 env
-                        let env' = (x, v)::env
+                        let env' = (x, Int(v))::env
                         eval e2 env'    
+    | LetFun(f, x, e1, e2) -> let clos = Closure(f, x, e1, env)
+                              let env' = (f, clos)::env
+                              eval e2 env'
+    | Call(f, e1) -> match lookup f env with
+                     | Int i -> failwith "Must get Closure in function call."
+                     | Closure(f,x,eBody,fEnv) ->
+                         let argument = eval e1 env
+                         let env' = (f, Closure(f,x,eBody,fEnv))::(x, Int(argument))::fEnv
+                         eval eBody env'
+
+
+
+        

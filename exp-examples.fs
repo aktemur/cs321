@@ -27,39 +27,9 @@ let tokenize str =
 let run s = eval (fromString s) []
 
 (* Examples *)
-let example1 = Prim("+", CstI(17),
-                         Prim("/",
-                              CstI(50),
-                              CstI(2)))
+let ex1 = "let f n = n * 5 in f(6) end"
 
-let example2 = Prim("+", CstI(17),
-                         Prim("/",
-                              CstI(50),
-                              CstI(0)))
+let recursiveEx = @"let fact n = if n < 1 then 1 else n * fact(n-1)
+                    in fact(6) end"
 
-let example3 = Prim("*", CstI 17, CstI 25)
 
-let example4 = Prim("+", CstI(17),
-                         Prim("/",
-                              Var "a",
-                              Var "b"))
-
-let example5 = Let("a",
-                   CstI 36,
-                   Let("b",
-                       CstI 4,
-                       Prim("+",
-                            CstI 17,
-                            Prim("/",
-                                 Var "a",
-                                 Var "b"))))
-
-let example6 = Prim("+",
-                    CstI 17,
-                    Let("x",
-                        CstI 5,
-                        Prim("*",
-                             CstI 5,
-                             Var "x")))
-
-let initialEnv = [("a", 36); ("b", 9); ("z", 34)]

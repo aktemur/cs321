@@ -1,2 +1,5 @@
 .DS_Store
 *~
+exp-lex.fs
+exp-parse.fs
+*.dll
