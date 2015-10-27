@@ -32,6 +32,7 @@ type exp = CstI of int
          | Call of string * exp
 
 type value = Int of int
+           | Bool of bool
            | Closure of string * string * exp * ((string * value) list)
 
 let rec lookup x env =
@@ -42,40 +43,56 @@ let rec lookup x env =
 
 let rec eval e env =
     match e with
-    | CstI i -> i
-    | CstB b -> if b then 1 else 0
-    | Var x -> match lookup x env with
-               | Int i -> i
-               | Closure (f,x,e1,env') -> failwith "Supporting first-order functions only."
-    | Prim("+", e1, e2) -> eval e1 env + eval e2 env
-    | Prim("-", e1, e2) -> eval e1 env - eval e2 env
-    | Prim("*", e1, e2) -> eval e1 env * eval e2 env
-    | Prim("/", e1, e2) -> let v1, v2 = eval e1 env, eval e2 env
-                           if v2 = 0 then failwith "You gave me a ZERO!!!"
-                           else v1 / v2
-    | Prim("minimum", e1, e2) -> let v1, v2 = (eval e1 env), (eval e2 env)
-                                 if v1 < v2 then v1 else v2
-    | Prim("<", e1, e2) -> let v1, v2 = (eval e1 env), (eval e2 env)
-                           if v1 < v2 then 1 else 0
-    | Prim("&&", e1, e2) -> let v1 = (eval e1 env)
-                            if v1 = 0 then 0 else (eval e2 env)
-    | Prim("||", e1, e2) -> let v1 = (eval e1 env)
-                            if v1 = 1 then 1 else (eval e2 env)
+    | CstI i -> Int(i)
+    | CstB b -> Bool(b)
+    | Var x -> lookup x env
+    | Prim("+", e1, e2) -> match eval e1 env, eval e2 env with
+                           | Int(i1), Int(i2) -> Int(i1+i2)
+                           | _,_ -> failwith "Need an integer for +."
+    | Prim("-", e1, e2) -> match eval e1 env, eval e2 env with
+                           | Int(i1), Int(i2) -> Int(i1-i2)
+                           | _,_ -> failwith "Need an integer for -."
+    | Prim("*", e1, e2) -> match eval e1 env, eval e2 env with
+                           | Int(i1), Int(i2) -> Int(i1*i2)
+                           | _,_ -> failwith "Need an integer for *."
+    | Prim("/", e1, e2) -> match eval e1 env, eval e2 env with
+                           | Int(i1), Int(i2) -> Int(i1/i2)
+                           | _,_ -> failwith "Need an integer for /."
+    | Prim("minimum", e1, e2) -> match eval e1 env, eval e2 env with
+                                 | Int(i1), Int(i2) -> Int(min i1 i2)
+                                 | _,_ -> failwith "Need an integer for min."
+    | Prim("<", e1, e2) -> match eval e1 env, eval e2 env with
+                           | Int(i1), Int(i2) -> Bool(i1 < i2)
+                           | _,_ -> failwith "Need an integer for <."
+    | Prim("&&", e1, e2) -> match eval e1 env with
+                            | Bool(false) -> Bool(false)
+                            | Bool(b1) -> match eval e2 env with
+                                          | Bool(b2) -> Bool(b2)
+                                          | _ -> failwith "Need a boolean for &&."
+                            | _ -> failwith "Need a boolean for &&."
+    | Prim("||", e1, e2) -> match eval e1 env with
+                            | Bool(true) -> Bool(true)
+                            | Bool(b1) -> match eval e2 env with
+                                          | Bool(b2) -> Bool(b2)
+                                          | _ -> failwith "Need a boolean for ||."
+                            | _ -> failwith "Need a boolean for ||."
     | Prim(_, e1, e2) -> failwith "Operator no recognized."
-    | If(e1,e2,e3) -> if (eval e1 env) = 0 then eval e3 env else eval e2 env
+    | If(e1,e2,e3) -> match eval e1 env with
+                      | Bool(true) -> eval e2 env
+                      | Bool(false) -> eval e3 env
+                      | _ -> failwith "If's condition must be a bool." 
     | Let(x, e1, e2) -> let v = eval e1 env
-                        let env' = (x, Int(v))::env
+                        let env' = (x, v)::env
                         eval e2 env'    
     | LetFun(f, x, e1, e2) -> let clos = Closure(f, x, e1, env)
                               let env' = (f, clos)::env
                               eval e2 env'
     | Call(f, e1) -> match lookup f env with
-                     | Int i -> failwith "Must get Closure in function call."
                      | Closure(f,x,eBody,fEnv) ->
                          let argument = eval e1 env
-                         let env' = (f, Closure(f,x,eBody,fEnv))::(x, Int(argument))::fEnv
+                         let env' = (f, Closure(f,x,eBody,fEnv))::(x, argument)::fEnv
                          eval eBody env'
-
+                     | _ -> failwith "Must get Closure in function call."
 
 
         
