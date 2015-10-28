@@ -13,5 +13,9 @@ let rec compile e =
                        | "*" -> RStar
                        | "/" -> RDiv
                        | "-" -> RMinus            
+                       | "min" -> RMin
+                       | "max" -> RMax
+                       | "=" -> REq
+                       | ">" -> RGreater
         compile e1 @ compile e2 @ [opSymbol]
     | Let(x, e1, e2) -> failwith "Let-in cannot be compiled."
