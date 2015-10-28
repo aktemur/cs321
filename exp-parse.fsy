@@ -12,8 +12,13 @@
 %token PLUS MINUS TIMES DIV
 %token LPAR RPAR
 %token LET EQ IN END
+%token MIN MAX COMMA GREATER
+%token IF THEN ELSE
 %token EOF
 
+%nonassoc ELSE
+%left EQ
+%left GREATER
 %left PLUS MINUS
 %left TIMES DIV
 
@@ -34,6 +39,11 @@ Expr:
   | Expr MINUS Expr                     { Prim("-",  $1, $3)     }
   | Expr TIMES Expr                     { Prim("*",  $1, $3)     }
   | Expr DIV   Expr                     { Prim("/",  $1, $3)     }
+  | Expr EQ    Expr                     { Prim("=",  $1, $3)     }
+  | Expr GREATER Expr                   { Prim(">",  $1, $3)     }
+  | MIN LPAR Expr COMMA Expr RPAR       { Prim("min",$3, $5)     }
+  | MAX LPAR Expr COMMA Expr RPAR       { Prim("max",$3, $5)     }
   | LET NAME EQ Expr IN Expr END        { Let($2, $4, $6)        }
+  | IF Expr THEN Expr ELSE Expr         { If($2, $4, $6)         }
 ;
 
