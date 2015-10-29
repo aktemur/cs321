@@ -46,6 +46,7 @@ rule Token = parse
   | ')'             { RPAR }
   | '='             { EQ }
   | ','             { COMMA }
+  | ">="            { GREATEREQ } 
   | '<'             { LESS }
   | "&&"            { ANDAND }
   | "||"            { OROR }
