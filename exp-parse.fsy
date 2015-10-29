@@ -16,6 +16,7 @@
 %token LESS
 %token IF THEN ELSE
 %token ANDAND OROR TRUE FALSE
+%token NOT
 %token EOF
 
 %nonassoc ELSE
@@ -41,6 +42,7 @@ Expr:
   | FALSE                               { CstB(false)            }
   | NAME                                { Var $1                 }
   | LPAR Expr RPAR                      { $2                     }
+  | NOT LPAR Expr RPAR                  { Not($3)                }
   | Expr PLUS  Expr                     { Prim("+",  $1, $3)     }
   | Expr MINUS Expr                     { Prim("-",  $1, $3)     }
   | Expr TIMES Expr                     { Prim("*",  $1, $3)     }

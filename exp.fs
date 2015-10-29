@@ -24,6 +24,7 @@ val it : int = 42
 
 type exp = CstI of int
          | CstB of bool
+         | Not of exp
          | Prim of string * exp * exp
          | Var of string
          | Let of string * exp * exp
@@ -46,6 +47,9 @@ let rec eval e env =
     | CstI i -> Int(i)
     | CstB b -> Bool(b)
     | Var x -> lookup x env
+    | Not e1 -> match eval e1 env with
+                | Bool b -> Bool (not b)
+                | _ -> failwith "Boolean negation needs a bool value."
     | Prim("+", e1, e2) -> match eval e1 env, eval e2 env with
                            | Int(i1), Int(i2) -> Int(i1+i2)
                            | _,_ -> failwith "Need an integer for +."

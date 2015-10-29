@@ -33,3 +33,4 @@ let recursiveEx = @"let fact n = if n < 1 then 1 else n * fact(n-1)
                     in fact(6) end"
 
 
+let notEx = "not(3 < 4)"

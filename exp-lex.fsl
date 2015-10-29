@@ -32,6 +32,7 @@ rule Token = parse
   | "else"          { ELSE }
   | "true"          { TRUE }
   | "false"         { FALSE }
+  | "not"           { NOT }
   | ['a'-'z''A'-'Z']['a'-'z''A'-'Z''0'-'9']*
                     { NAME (lexemeAsString lexbuf) }
   | "(*"            { commentStart := lexbuf.StartPos;
