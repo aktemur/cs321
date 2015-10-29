@@ -26,6 +26,7 @@ type exp = CstI of int
          | CstB of bool
          | Not of exp
          | Prim of string * exp * exp
+         | Unary of string * exp
          | Var of string
          | Let of string * exp * exp
          | LetFun of string * string * exp * exp
@@ -34,6 +35,7 @@ type exp = CstI of int
 
 type value = Int of int
            | Bool of bool
+           | Pair of value * value
            | Closure of string * string * exp * ((string * value) list)
 
 let rec lookup x env =
@@ -50,6 +52,14 @@ let rec eval e env =
     | Not e1 -> match eval e1 env with
                 | Bool b -> Bool (not b)
                 | _ -> failwith "Boolean negation needs a bool value."
+    | Unary("fst", e1) -> match eval e1 env with
+                          | Pair(v1, v2) -> v1
+                          | _ -> failwith "fst needs a pair of values."
+    | Unary("snd", e1) -> match eval e1 env with
+                          | Pair(v1, v2) -> v2
+                          | _ -> failwith "snd needs a pair of values."
+    | Unary(_, e1) -> failwith "Unary operator not recognized."
+    | Prim("(,)", e1, e2) -> Pair(eval e1 env, eval e2 env)
     | Prim("+", e1, e2) -> match eval e1 env, eval e2 env with
                            | Int(i1), Int(i2) -> Int(i1+i2)
                            | _,_ -> failwith "Need an integer for +."
@@ -80,7 +90,7 @@ let rec eval e env =
                                           | Bool(b2) -> Bool(b2)
                                           | _ -> failwith "Need a boolean for ||."
                             | _ -> failwith "Need a boolean for ||."
-    | Prim(_, e1, e2) -> failwith "Operator no recognized."
+    | Prim(_, e1, e2) -> failwith "Prim operator not recognized."
     | If(e1,e2,e3) -> match eval e1 env with
                       | Bool(true) -> eval e2 env
                       | Bool(false) -> eval e3 env

@@ -36,3 +36,9 @@ let recursiveEx = @"let fact n = if n < 1 then 1 else n * fact(n-1)
 let notEx = "not(3 < 4)"
 
 let gtEqEx = "10 >= 6+8"
+
+let pairEx1 = "let p = (6+8, 9-5) in fst(p) + snd(p) end"
+
+let pairEx2 = "let p = (6+8, 9-5) in (fst(p), snd(p)) end"
+
+let pairEx3 = "let p = (6+8, 9-5) in (snd(p), (fst(p) < 10, 5)) end"
