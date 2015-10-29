@@ -24,7 +24,6 @@ val it : int = 42
 
 type exp = CstI of int
          | CstB of bool
-         | Not of exp
          | Prim of string * exp * exp
          | Unary of string * exp
          | Var of string
@@ -49,9 +48,9 @@ let rec eval e env =
     | CstI i -> Int(i)
     | CstB b -> Bool(b)
     | Var x -> lookup x env
-    | Not e1 -> match eval e1 env with
-                | Bool b -> Bool (not b)
-                | _ -> failwith "Boolean negation needs a bool value."
+    | Unary("not", e1) -> match eval e1 env with
+                          | Bool b -> Bool (not b)
+                          | _ -> failwith "Boolean negation needs a bool value."
     | Unary("fst", e1) -> match eval e1 env with
                           | Pair(v1, v2) -> v1
                           | _ -> failwith "fst needs a pair of values."
