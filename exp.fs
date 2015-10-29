@@ -31,6 +31,7 @@ type exp = CstI of int
          | LetFun of string * string * exp * exp
          | If of exp * exp * exp
          | Call of string * exp
+         | Match of exp * string * string * exp
 
 type value = Int of int
            | Bool of bool
@@ -106,6 +107,10 @@ let rec eval e env =
                          let env' = (f, Closure(f,x,eBody,fEnv))::(x, argument)::fEnv
                          eval eBody env'
                      | _ -> failwith "Must get Closure in function call."
+    | Match(e1, x, y, e2) -> match eval e1 env with
+                             | Pair(v1,v2) -> let env' = (x,v1)::(y,v2)::env
+                                              in eval e2 env'
+                             | _ -> failwith "Match needs a pair of values."
 
 
         

@@ -42,3 +42,5 @@ let pairEx1 = "let p = (6+8, 9-5) in fst(p) + snd(p) end"
 let pairEx2 = "let p = (6+8, 9-5) in (fst(p), snd(p)) end"
 
 let pairEx3 = "let p = (6+8, 9-5) in (snd(p), (fst(p) < 10, 5)) end"
+
+let matchEx = "match (5+6, 2*3) with (f,s) -> f + s end"

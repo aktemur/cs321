@@ -18,6 +18,7 @@
 %token IF THEN ELSE
 %token ANDAND OROR TRUE FALSE
 %token NOT GREATEREQ
+%token MATCH WITH ARROW
 %token EOF
 
 %nonassoc ELSE
@@ -60,5 +61,6 @@ Expr:
   | FST LPAR Expr RPAR                  { Unary("fst", $3) }
   | SND LPAR Expr RPAR                  { Unary("snd", $3) }
   | IF Expr THEN Expr ELSE Expr         { If($2, $4, $6) }
+  | MATCH Expr WITH LPAR NAME COMMA NAME RPAR ARROW Expr END { Match($2, $5, $7, $10) }
 ;
 

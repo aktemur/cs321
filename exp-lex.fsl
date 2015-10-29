@@ -35,6 +35,9 @@ rule Token = parse
   | "not"           { NOT }
   | "fst"           { FST }
   | "snd"           { SND }
+  | "match"         { MATCH }
+  | "with"          { WITH }
+  | "->"            { ARROW }
   | ['a'-'z''A'-'Z']['a'-'z''A'-'Z''0'-'9']*
                     { NAME (lexemeAsString lexbuf) }
   | "(*"            { commentStart := lexbuf.StartPos;
