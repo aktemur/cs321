@@ -32,11 +32,14 @@ rule Token = parse
   | "else"          { ELSE }
   | "true"          { TRUE }
   | "false"         { FALSE }
+  | "int"           { INT }
+  | "bool"          { BOOL }
   | ['a'-'z''A'-'Z']['a'-'z''A'-'Z''0'-'9']*
                     { NAME (lexemeAsString lexbuf) }
   | "(*"            { commentStart := lexbuf.StartPos;
                       commentDepth := 1; 
                       SkipComment lexbuf; Token lexbuf }
+  | "->"            { ARROW }
   | '+'             { PLUS }                     
   | '-'             { MINUS }                     
   | '*'             { TIMES }                     
@@ -48,6 +51,7 @@ rule Token = parse
   | '<'             { LESS }
   | "&&"            { ANDAND }
   | "||"            { OROR }
+  | ':'             { COLON }
   | eof             { EOF }
   | _               { failwith "Lexer error: illegal symbol" }
 

@@ -27,9 +27,16 @@ let tokenize str =
 let run s = eval (fromString s) []
 
 (* Examples *)
-let ex1 = "let f n = n * 5 in f(6) end"
+let ex1 = "let f (n:int) : int = n * 5 in f(6) end"
 
-let recursiveEx = @"let fact n = if n < 1 then 1 else n * fact(n-1)
+let recursiveEx = @"let fact (n:int) : int = if n < 1 then 1 else n * fact(n-1)
                     in fact(6) end"
 
+let typeEx1 = "let x = 42 in x + 56 end"
 
+let typeEx2 = @"let f (b:bool) : int = if b then 42 else 25
+               in f(4 < 6) end"
+
+let typeEx3 = "let f (n:int) : bool =  n < 56 in f(3) end"
+
+let typeEx4 = "let f (n:int) : bool =  n < 56 in f end"

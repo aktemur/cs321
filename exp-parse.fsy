@@ -16,8 +16,10 @@
 %token LESS
 %token IF THEN ELSE
 %token ANDAND OROR TRUE FALSE
+%token INT BOOL COLON ARROW
 %token EOF
 
+%right ARROW
 %nonassoc ELSE
 %left OROR
 %left ANDAND
@@ -49,9 +51,15 @@ Expr:
   | Expr ANDAND Expr                    { Prim("&&", $1, $3)     }
   | Expr OROR Expr                      { Prim("||", $1, $3)     }
   | LET NAME EQ Expr IN Expr END        { Let($2, $4, $6)        }
-  | LET NAME NAME EQ Expr IN Expr END   { LetFun($2, $3, $5, $7) }
+  | LET NAME LPAR NAME COLON Type RPAR COLON Type EQ Expr IN Expr END
+                                        { LetFun($2, $4, $6, $9, $11, $13) }
   | NAME LPAR Expr RPAR                 { Call($1, $3)           }
   | MIN LPAR Expr COMMA Expr RPAR       { Prim("minimum", $3, $5) }
   | IF Expr THEN Expr ELSE Expr         { If($2, $4, $6) }
 ;
 
+Type:
+  | INT                                 { TypI }
+  | BOOL                                { TypB }
+  | Type ARROW Type                     { TypF($1, $3) }
+  | LPAR Type RPAR                      { $2 }

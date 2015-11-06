@@ -10,6 +10,7 @@ session with necessary files loaded.
 In the fsharpi prompt:
 
 > open ExpExamples;;
+> open Exp;;
 > tokenize "17 + let x = 5 in x * x end";;
 val it : Parser.token list =
   [CSTINT 17; PLUS; LET; NAME "x"; EQ; CSTINT 5; IN; NAME "x"; TIMES; NAME "x";
@@ -20,14 +21,28 @@ val it : Exp.exp =
 > run "17 + let x = 5 in x * x end";;       
 val it : int = 42
 
+> typeOf (fromString "4 + 6") [];;
+val it : typ = TypI
+> typeOf (fromString typeEx1) [];;
+val it : typ = TypI
+> typeOf (fromString typeEx2) [];;
+val it : typ = TypI
+> typeOf (fromString typeEx3) [];;
+val it : typ = TypB
+> typeOf (fromString typeEx4) [];;
+val it : typ = TypF (TypI,TypB)
 *)
+
+type typ = TypI
+         | TypB
+         | TypF of typ * typ
 
 type exp = CstI of int
          | CstB of bool
          | Prim of string * exp * exp
          | Var of string
          | Let of string * exp * exp
-         | LetFun of string * string * exp * exp
+         | LetFun of string * string * typ * typ * exp * exp
          | If of exp * exp * exp
          | Call of string * exp
 
@@ -84,9 +99,10 @@ let rec eval e env =
     | Let(x, e1, e2) -> let v = eval e1 env
                         let env' = (x, v)::env
                         eval e2 env'    
-    | LetFun(f, x, e1, e2) -> let clos = Closure(f, x, e1, env)
-                              let env' = (f, clos)::env
-                              eval e2 env'
+    | LetFun(f, x, tx, tf, e1, e2) ->
+                        let clos = Closure(f, x, e1, env)
+                        let env' = (f, clos)::env
+                        eval e2 env'
     | Call(f, e1) -> match lookup f env with
                      | Closure(f,x,eBody,fEnv) ->
                          let argument = eval e1 env
@@ -96,3 +112,54 @@ let rec eval e env =
 
 
         
+let rec typeOf e env =
+    match e with
+    | CstI i -> TypI
+    | CstB b -> TypB
+    | Var x -> lookup x env
+    | Prim("+", e1, e2) -> match typeOf e1 env, typeOf e2 env with
+                           | TypI, TypI -> TypI
+                           | _,_ -> failwith "int + int !!!"
+    | Prim("-", e1, e2) -> match typeOf e1 env, typeOf e2 env with
+                           | TypI, TypI -> TypI
+                           | _,_ -> failwith "int - int !!!"
+    | Prim("*", e1, e2) -> match typeOf e1 env, typeOf e2 env with
+                           | TypI, TypI -> TypI
+                           | _,_ -> failwith "int * int !!!"
+    | Prim("/", e1, e2) -> match typeOf e1 env, typeOf e2 env with
+                           | TypI, TypI -> TypI
+                           | _,_ -> failwith "int / int !!!"
+    | Prim("minimum", e1, e2) -> match typeOf e1 env, typeOf e2 env with
+                                 | TypI, TypI -> TypI
+                                 | _,_ -> failwith "min(int,int) !!!"
+    | Prim("<", e1, e2) -> match typeOf e1 env, typeOf e2 env with
+                           | TypI, TypI -> TypB
+                           | _,_ -> failwith "int < int !!!"
+    | Prim("&&", e1, e2) -> match typeOf e1 env, typeOf e2 env with
+                            | TypB, TypB -> TypB
+                            | _,_ -> failwith "bool && bool !!!"
+    | Prim("||", e1, e2) -> match typeOf e1 env, typeOf e2 env with
+                            | TypB, TypB -> TypB
+                            | _,_ -> failwith "bool || bool !!!"
+    | Prim(_, e1, e2) -> failwith "Operator no recognized."
+
+    | If(e1,e2,e3) -> match typeOf e1 env, typeOf e2 env, typeOf e3 env with
+                      | TypB, t2, t3 -> if t2 = t3 then t2
+                                        else failwith "If-branches must agree"
+                      | _,_,_ -> failwith "If-cond must be a bool"
+    | Let(x, e1, e2) -> let tr = typeOf e1 env
+                        let env' = (x, tr)::env
+                        typeOf e2 env'
+    | LetFun(f, x, tx, tr, e1, e2) ->
+        let t1 = typeOf e1 ((f,TypF(tx,tr))::(x, tx)::env)
+        if t1 = tr then
+            let t = typeOf e2 ((f,TypF(tx,tr))::env)
+            t
+        else
+            failwith "tx and tr must have been the same"
+    | Call(f, e1) ->
+        match lookup f env with
+        | TypF(tx,tr) -> let t1 = typeOf e1 env
+                         if t1 = tx then tr
+                         else failwith "Argument type and input type must match"
+        | _ -> failwith "f must be a function."
