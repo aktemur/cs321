@@ -19,6 +19,8 @@ let incr_lineno lexbuf =
 *)
 let keyword s =
     match s with
+    | "let"   -> LET
+    | "in"    -> IN
     | _       -> NAME s
 }
 
@@ -32,6 +34,7 @@ rule tokenize = parse
   | '-'             { MINUS }                     
   | '*'             { STAR }                     
   | '/'             { SLASH }                     
+  | '='             { EQ }
   | eof             { EOF }
   | _               { failwith "Lexer error: illegal symbol" }
 
