@@ -23,7 +23,7 @@ let keyword s =
 }
 
 rule tokenize = parse
-  | [' ' '\t' '\r'] { tokenize lexbuf } /* Eat up whitespace */
+  | [' ' '\t' '\r'] { tokenize lexbuf (* Eat up whitespace *) }
   | '\n'            { incr_lineno lexbuf; tokenize lexbuf }
   | ['0'-'9']+      { INTEGER (int_of_string (lexeme lexbuf)) }
   | ['a'-'z''A'-'Z']['a'-'z''A'-'Z''0'-'9']*
