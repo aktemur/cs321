@@ -9,10 +9,11 @@
 %token PLUS STAR MINUS SLASH
 %token LET EQ IN
 %token LEFTANGLE
+%token IF THEN ELSE
 
 /* Precedence definitions: */
 /* lowest precedence  */
-%nonassoc IN
+%nonassoc IN ELSE
 %left EQ
 %nonassoc LEFTANGLE
 %left PLUS MINUS
@@ -38,6 +39,7 @@ expression:
   | expression EQ expression           { Eq($1, $3) }
   | expression LEFTANGLE expression    { LessThan($1, $3) }
   | LET NAME EQ expression IN expression { Let($2, $4, $6) }
+  | IF expression THEN expression ELSE expression { If($2, $4, $6) }
 ;
 
 %%

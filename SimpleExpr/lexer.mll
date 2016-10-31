@@ -21,6 +21,9 @@ let keyword s =
     match s with
     | "let"   -> LET
     | "in"    -> IN
+    | "if"    -> IF
+    | "then"  -> THEN
+    | "else"  -> ELSE 
     | _       -> NAME s
 }
 

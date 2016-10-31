@@ -7,6 +7,7 @@ type expr = CstI of int
           | Eq of expr * expr
           | LessThan of expr * expr
           | Let of string * expr * expr
+          | If of expr * expr * expr
 
 let rec lookup x env =
   match env with
@@ -28,6 +29,10 @@ let rec eval e env =
   | Let(x, e1, e2) -> let i = eval e1 env in
                       let newEnv = (x, i)::env in
                       eval e2 newEnv
+  | If(c, e1, e2) -> (match eval c env with
+                      | 1 -> eval e1 env
+                      | 0 -> eval e2 env
+                      | _ -> failwith "WTF!")
 
 let e1 = Minus(Plus(CstI 4, Var "a"), CstI 5)
 
