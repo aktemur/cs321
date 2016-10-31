@@ -32,12 +32,12 @@ main:
 expression:
     INTEGER                            { CstI $1 }
   | NAME                               { Var $1  }
-  | expression PLUS expression         { Plus($1, $3)  }
-  | expression STAR expression         { Star($1, $3)  }
-  | expression MINUS expression        { Minus($1, $3) }
-  | expression SLASH expression        { Slash($1, $3) }
-  | expression EQ expression           { Eq($1, $3) }
-  | expression LEFTANGLE expression    { LessThan($1, $3) }
+  | expression PLUS expression         { Prim("+", $1, $3)  }
+  | expression STAR expression         { Prim("*", $1, $3)  }
+  | expression MINUS expression        { Prim("-", $1, $3) }
+  | expression SLASH expression        { Prim("/", $1, $3) }
+  | expression EQ expression           { Prim("=", $1, $3) }
+  | expression LEFTANGLE expression    { Prim("<", $1, $3) }
   | LET NAME EQ expression IN expression { Let($2, $4, $6) }
   | IF expression THEN expression ELSE expression { If($2, $4, $6) }
 ;
