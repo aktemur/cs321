@@ -8,10 +8,13 @@
 %token EOF
 %token PLUS STAR MINUS SLASH
 %token LET EQ IN
+%token LEFTANGLE
 
 /* Precedence definitions: */
 /* lowest precedence  */
 %nonassoc IN
+%left EQ
+%nonassoc LEFTANGLE
 %left PLUS MINUS
 %left STAR SLASH
 /* highest precedence  */
@@ -32,6 +35,8 @@ expression:
   | expression STAR expression         { Star($1, $3)  }
   | expression MINUS expression        { Minus($1, $3) }
   | expression SLASH expression        { Slash($1, $3) }
+  | expression EQ expression           { Eq($1, $3) }
+  | expression LEFTANGLE expression    { LessThan($1, $3) }
   | LET NAME EQ expression IN expression { Let($2, $4, $6) }
 ;
 

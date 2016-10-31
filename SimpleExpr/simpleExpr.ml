@@ -4,6 +4,8 @@ type expr = CstI of int
           | Star of expr * expr
           | Minus of expr * expr
           | Slash of expr * expr
+          | Eq of expr * expr
+          | LessThan of expr * expr
           | Let of string * expr * expr
 
 let rec lookup x env =
@@ -21,6 +23,8 @@ let rec eval e env =
   | Minus(e1, e2) -> eval e1 env - eval e2 env
   | Star(e1, e2) -> eval e1 env * eval e2 env
   | Slash(e1, e2) -> eval e1 env / eval e2 env
+  | Eq(e1, e2) -> if eval e1 env = eval e2 env then 1 else 0
+  | LessThan(e1, e2) -> if eval e1 env < eval e2 env then 1 else 0
   | Let(x, e1, e2) -> let i = eval e1 env in
                       let newEnv = (x, i)::env in
                       eval e2 newEnv
