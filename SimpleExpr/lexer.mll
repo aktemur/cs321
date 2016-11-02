@@ -29,6 +29,8 @@ let keyword s =
     | "max"   -> MAX
     | "fst"   -> FST
     | "snd"   -> SND
+    | "match" -> MATCH
+    | "with"  -> WITH
     | _       -> NAME s
 }
 
@@ -48,6 +50,7 @@ rule tokenize = parse
   | '('             { LPAR }
   | ')'             { RPAR }
   | ','             { COMMA }
+  | "->"            { ARROW }
   | eof             { EOF }
   | _               { failwith "Lexer error: illegal symbol" }
 

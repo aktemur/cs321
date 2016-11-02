@@ -4,6 +4,7 @@ type expr = CstI of int
           | Prim of string * expr * expr 
           | Let of string * expr * expr
           | If of expr * expr * expr
+          | MatchPair of expr * string * string * expr
 
 type value = Int of int
            | Bool of bool
@@ -49,6 +50,13 @@ let rec eval e env =
                       | Bool(true) -> eval e1 env
                       | Bool(false) -> eval e2 env
                       | _ -> failwith "WTF!")
+  | MatchPair(e1, x, y, e2) ->
+     (match eval e1 env with
+      | Pair(v1,v2) ->
+         let newEnv = (x,v1)::(y,v2)::env in
+         eval e2 newEnv
+      | _ -> failwith "Match works for Pairs only you idiot"
+     )
 
 let e1 = Prim("-", Prim("+", CstI 4, Var "a"), CstI 5)
 

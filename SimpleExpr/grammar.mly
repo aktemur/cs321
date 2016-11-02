@@ -15,10 +15,11 @@
 %token GTEQ
 %token MIN MAX COMMA
 %token FST SND
+%token MATCH WITH ARROW
 
 /* Precedence definitions: */
 /* lowest precedence  */
-%nonassoc IN ELSE
+%nonassoc IN ELSE ARROW
 %left EQ
 %nonassoc LEFTANGLE GTEQ
 %left PLUS MINUS
@@ -53,6 +54,8 @@ expression:
   | LPAR expression COMMA expression RPAR { Prim(",", $2, $4) }
   | FST LPAR expression RPAR           { Unary("fst", $3) }
   | SND LPAR expression RPAR           { Unary("snd", $3) }
+  | MATCH expression WITH LPAR NAME COMMA NAME RPAR ARROW expression
+                                       { MatchPair($2, $5, $7, $10) }
 ;
 
 %%
