@@ -24,6 +24,7 @@ let keyword s =
     | "if"    -> IF
     | "then"  -> THEN
     | "else"  -> ELSE 
+    | "not"   -> NOT
     | _       -> NAME s
 }
 

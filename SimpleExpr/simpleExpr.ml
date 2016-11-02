@@ -1,5 +1,6 @@
 type expr = CstI of int
           | Var of string
+          | Unary of string * expr
           | Prim of string * expr * expr 
           | Let of string * expr * expr
           | If of expr * expr * expr
@@ -18,6 +19,12 @@ let rec eval e env =
   match e with
   | CstI i -> Int(i)
   | Var x -> lookup x env
+  | Unary(op, e1) ->
+     let v = eval e1 env in
+     (match op, v with
+      | "not", Bool(b) -> Bool(not b)
+      | _ -> failwith "Unrecognized Unary operator or bad value."
+     )
   | Prim(op, e1, e2) ->
      let (v1, v2) = (eval e1 env, eval e2 env) in
      (match op, v1, v2 with

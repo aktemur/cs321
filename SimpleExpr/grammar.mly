@@ -11,6 +11,7 @@
 %token LEFTANGLE
 %token IF THEN ELSE
 %token LPAR RPAR
+%token NOT
 
 /* Precedence definitions: */
 /* lowest precedence  */
@@ -42,6 +43,7 @@ expression:
   | LET NAME EQ expression IN expression { Let($2, $4, $6) }
   | IF expression THEN expression ELSE expression { If($2, $4, $6) }
   | LPAR expression RPAR               { $2 }
+  | NOT LPAR expression RPAR           { Unary("not", $3) }
 ;
 
 %%
