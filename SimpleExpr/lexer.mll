@@ -39,6 +39,8 @@ rule tokenize = parse
   | '/'             { SLASH }                     
   | '='             { EQ }
   | '<'             { LEFTANGLE }
+  | '('             { LPAR }
+  | ')'             { RPAR }
   | eof             { EOF }
   | _               { failwith "Lexer error: illegal symbol" }
 

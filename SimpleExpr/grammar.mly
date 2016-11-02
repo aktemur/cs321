@@ -10,6 +10,7 @@
 %token LET EQ IN
 %token LEFTANGLE
 %token IF THEN ELSE
+%token LPAR RPAR
 
 /* Precedence definitions: */
 /* lowest precedence  */
@@ -40,6 +41,7 @@ expression:
   | expression LEFTANGLE expression    { Prim("<", $1, $3) }
   | LET NAME EQ expression IN expression { Let($2, $4, $6) }
   | IF expression THEN expression ELSE expression { If($2, $4, $6) }
+  | LPAR expression RPAR               { $2 }
 ;
 
 %%
