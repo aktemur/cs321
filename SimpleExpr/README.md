@@ -7,42 +7,10 @@ $ ocamllex lexer.mll
 ```
 
 The `grammar.ml` and `lexer.ml` are generated.
-Next, open the OCaml REPL and load the files in the following
-order:
-
-```ocaml
-# #use "simpleExpr.ml";;
-# #use "grammar.ml";;
-# #use "lexer.ml";;
-```
-
-This will give us
-
-* the `tokenize` function from `lexer.ml` that takes a lexing buffer
-and returns the next token:
-
-```ocaml
-# tokenize;;
-- : Lexing.lexbuf -> token = <fun>
-```
-
-* the `main` function from `grammar.ml` that takes tokenization function and 
-a buffer, and returns an `expr`:
-
-```ocaml
-# main;;
-- : (Lexing.lexbuf -> token) -> Lexing.lexbuf -> expr = <fun>
-```
-
-Remember that you can create lexing buffers from strings using the `Lexing` module:
-
-```ocaml
-# let buffer = Lexing.from_string "abc 1234 xy35 + -    cool";;
-```
-
-And now you can define a `parse` function to convert strings
-to expressions, and a `run` function to evaluate
-inputs given as strings.
+Next, open the OCaml REPL and load the `gather.ml`
+file, which puts everything together by loading
+`simpleExpr.ml`, `grammar.ml`, and `lexer.ml`,
+and also by defining the following `parse` and `run` functions:
 
 ```ocaml
 # let parse s = main tokenize (Lexing.from_string s);;
