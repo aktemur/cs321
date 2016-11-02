@@ -12,6 +12,10 @@ let rec eval e =
       | "-" -> i1 - i2
       | "*" -> i1 * i2
       | "/" -> i1 / i2
+      | "<" -> if i1 < i2 then 1 else 0
+      | "=" -> if i1 = i2 then 1 else 0
+      | "min" -> if i1 < i2 then i1 else i2
+      | "max" -> if i1 > i2 then i1 else i2
       | _ -> failwith "Unrecognized operator."
      )
 
@@ -26,6 +30,10 @@ let rec compile e =
        | "-" -> Subt
        | "*" -> Mult
        | "/" -> Divide
+       | "<" -> LessThan
+       | "=" -> Equals
+       | "min" -> Min
+       | "max" -> Max
      in (compile e1)@(compile e2)@[opCode]
 
 
@@ -53,3 +61,14 @@ let e4 = Prim("-", CstI 15,
 
 
               
+let e5 = Prim("min", CstI 3, CstI 5)
+
+let e6 = Prim("=", CstI 5, CstI 5)
+
+let e7 = Prim("max",
+              Prim("+", CstI 3, CstI 5),
+              Prim("*",
+                   Prim("max",
+                        CstI 8,
+                        Prim("<", CstI 4, CstI 9)),
+                   CstI 99))              
