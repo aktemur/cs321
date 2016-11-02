@@ -7,6 +7,7 @@ type expr = CstI of int
 
 type value = Int of int
            | Bool of bool
+           | Pair of value * value
 
 let rec lookup x env =
   match env with
@@ -23,6 +24,8 @@ let rec eval e env =
      let v = eval e1 env in
      (match op, v with
       | "not", Bool(b) -> Bool(not b)
+      | "fst", Pair(v1,v2) -> v1
+      | "snd", Pair(v1,v2) -> v2
       | _ -> failwith "Unrecognized Unary operator or bad value."
      )
   | Prim(op, e1, e2) ->
@@ -36,6 +39,7 @@ let rec eval e env =
       | "<", Int(i1), Int(i2) -> if i1 < i2 then Bool(true) else Bool(false)
       | "min", Int(i1), Int(i2) -> if i1 < i2 then Int(i1) else Int(i2)
       | "max", Int(i1), Int(i2) -> if i1 < i2 then Int(i2) else Int(i1)
+      | ",", v1, v2 -> Pair(v1, v2)
       | _ -> failwith "Unrecognized Prim operator or bad values."
      )
   | Let(x, e1, e2) -> let i = eval e1 env in

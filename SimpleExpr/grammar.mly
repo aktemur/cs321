@@ -14,6 +14,7 @@
 %token NOT
 %token GTEQ
 %token MIN MAX COMMA
+%token FST SND
 
 /* Precedence definitions: */
 /* lowest precedence  */
@@ -49,6 +50,9 @@ expression:
   | NOT LPAR expression RPAR           { Unary("not", $3) }
   | MIN LPAR expression COMMA expression RPAR { Prim("min", $3, $5) }
   | MAX LPAR expression COMMA expression RPAR { Prim("max", $3, $5) }
+  | LPAR expression COMMA expression RPAR { Prim(",", $2, $4) }
+  | FST LPAR expression RPAR           { Unary("fst", $3) }
+  | SND LPAR expression RPAR           { Unary("snd", $3) }
 ;
 
 %%

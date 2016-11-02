@@ -27,6 +27,8 @@ let keyword s =
     | "not"   -> NOT
     | "min"   -> MIN
     | "max"   -> MAX
+    | "fst"   -> FST
+    | "snd"   -> SND
     | _       -> NAME s
 }
 
