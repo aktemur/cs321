@@ -25,6 +25,8 @@ let keyword s =
     | "then"  -> THEN
     | "else"  -> ELSE 
     | "not"   -> NOT
+    | "min"   -> MIN
+    | "max"   -> MAX
     | _       -> NAME s
 }
 
@@ -43,6 +45,7 @@ rule tokenize = parse
   | ">="            { GTEQ }
   | '('             { LPAR }
   | ')'             { RPAR }
+  | ','             { COMMA }
   | eof             { EOF }
   | _               { failwith "Lexer error: illegal symbol" }
 

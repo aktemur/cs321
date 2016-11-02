@@ -34,6 +34,8 @@ let rec eval e env =
       | "/", Int(i1), Int(i2) -> Int(i1 / i2)
       | "=", Int(i1), Int(i2) -> if i1 = i2 then Bool(true) else Bool(false)
       | "<", Int(i1), Int(i2) -> if i1 < i2 then Bool(true) else Bool(false)
+      | "min", Int(i1), Int(i2) -> if i1 < i2 then Int(i1) else Int(i2)
+      | "max", Int(i1), Int(i2) -> if i1 < i2 then Int(i2) else Int(i1)
       | _ -> failwith "Unrecognized Prim operator or bad values."
      )
   | Let(x, e1, e2) -> let i = eval e1 env in

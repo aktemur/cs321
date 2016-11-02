@@ -13,6 +13,7 @@
 %token LPAR RPAR
 %token NOT
 %token GTEQ
+%token MIN MAX COMMA
 
 /* Precedence definitions: */
 /* lowest precedence  */
@@ -46,6 +47,8 @@ expression:
   | IF expression THEN expression ELSE expression { If($2, $4, $6) }
   | LPAR expression RPAR               { $2 }
   | NOT LPAR expression RPAR           { Unary("not", $3) }
+  | MIN LPAR expression COMMA expression RPAR { Prim("min", $3, $5) }
+  | MAX LPAR expression COMMA expression RPAR { Prim("max", $3, $5) }
 ;
 
 %%
