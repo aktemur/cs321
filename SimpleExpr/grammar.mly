@@ -12,12 +12,13 @@
 %token IF THEN ELSE
 %token LPAR RPAR
 %token NOT
+%token GTEQ
 
 /* Precedence definitions: */
 /* lowest precedence  */
 %nonassoc IN ELSE
 %left EQ
-%nonassoc LEFTANGLE
+%nonassoc LEFTANGLE GTEQ
 %left PLUS MINUS
 %left STAR SLASH
 /* highest precedence  */
@@ -40,6 +41,7 @@ expression:
   | expression SLASH expression        { Prim("/", $1, $3) }
   | expression EQ expression           { Prim("=", $1, $3) }
   | expression LEFTANGLE expression    { Prim("<", $1, $3) }
+  | expression GTEQ expression         { Unary("not", Prim("<", $1, $3)) }
   | LET NAME EQ expression IN expression { Let($2, $4, $6) }
   | IF expression THEN expression ELSE expression { If($2, $4, $6) }
   | LPAR expression RPAR               { $2 }

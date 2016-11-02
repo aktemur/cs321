@@ -40,6 +40,7 @@ rule tokenize = parse
   | '/'             { SLASH }                     
   | '='             { EQ }
   | '<'             { LEFTANGLE }
+  | ">="            { GTEQ }
   | '('             { LPAR }
   | ')'             { RPAR }
   | eof             { EOF }
