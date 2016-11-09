@@ -45,11 +45,12 @@ expression:
   | expression EQ expression           { Prim("=", $1, $3) }
   | expression LEFTANGLE expression    { Prim("<", $1, $3) }
   | expression GTEQ expression         { Unary("not", Prim("<", $1, $3)) }
-  | LET NAME EQ expression IN expression { Let($2, $4, $6) }
+  | LET NAME params EQ expression IN expression
+                                       { Let($2, List.fold_right (fun x e -> Fun(x,e)) $3 $5, $7) }
   | IF expression THEN expression ELSE expression { If($2, $4, $6) }
   | MATCH expression WITH LPAR NAME COMMA NAME RPAR ARROW expression
                                        { MatchPair($2, $5, $7, $10) }
-  | FUN NAME ARROW expression          { Fun($2, $4) }
+  | FUN NAME params ARROW expression   { Fun($2, List.fold_right (fun x e -> Fun(x,e)) $3 $5) }
   | appExpr                            { $1 }
 ;
 
@@ -68,6 +69,11 @@ atomExpr:
 appExpr:
     atomExpr atomExpr                  { App($1, $2) }
   | appExpr atomExpr                   { App($1, $2) }
+;
+
+params:
+    /* empty */                        { [] }
+  | NAME params                        { $1::$2 }
 ;
 
 %%
