@@ -5,6 +5,8 @@ type expr = CstI of int
           | Let of string * expr * expr
           | If of expr * expr * expr
           | MatchPair of expr * string * string * expr
+          | Fun of string * expr
+          | App of expr * expr
 
 type value = Int of int
            | Bool of bool

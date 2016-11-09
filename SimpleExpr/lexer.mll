@@ -31,6 +31,7 @@ let keyword s =
     | "snd"   -> SND
     | "match" -> MATCH
     | "with"  -> WITH
+    | "fun"   -> FUN
     | _       -> NAME s
 }
 
