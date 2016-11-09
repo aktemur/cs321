@@ -11,6 +11,10 @@ type expr = CstI of int
 type value = Int of int
            | Bool of bool
            | Pair of value * value
+           | Closure of string * expr * environment
+
+and environment = (string * value) list
+                            
 
 let rec lookup x env =
   match env with
@@ -18,7 +22,7 @@ let rec lookup x env =
   | (y,i)::rest -> if y = x then i
                    else lookup x rest
               
-(* eval: expr -> (string * int) list -> value *)
+(* eval: expr -> environment -> value *)
 let rec eval e env =
   match e with
   | CstI i -> Int(i)
@@ -58,6 +62,14 @@ let rec eval e env =
          let newEnv = (x,v1)::(y,v2)::env in
          eval e2 newEnv
       | _ -> failwith "Match works for Pairs only you idiot"
+     )
+  | Fun(x, body) -> Closure(x, body, env)
+  | App(e1, e2) ->
+     (match eval e1 env with
+      | Closure(x, body, fEnv) ->
+         let arg = eval e2 env in
+         eval body ((x,arg)::fEnv)
+      | _ -> failwith "Whoa"
      )
 
 let e1 = Prim("-", Prim("+", CstI 4, Var "a"), CstI 5)
