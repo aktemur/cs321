@@ -3,6 +3,8 @@ type tip = IntTy
          | FunTy of tip * tip
          | PairTy of tip * tip
 
+type typeEnvironment = (string * tip) list
+
 type expr = CstI of int
           | Var of string
           | Unary of string * expr
@@ -77,16 +79,58 @@ let rec eval e env =
       | _ -> failwith "Whoa"
      )
 
-let e1 = Prim("-", Prim("+", CstI 4, Var "a"), CstI 5)
-
-let e2 = Prim("-", Prim("/", Prim("*", Var "x", CstI 30),
-                     Var "w"),
-               Var "k")
-let e3 = Let("a",
-             Prim("+", CstI 30, CstI 5),
-             Prim("+", Var "a", CstI 12))
-
-let e4 = Let("a", CstI 30,
-             Let("b", CstI 12,
-                 Prim("+", Var "a",
-                      Prim("+", Var "b", CstI 3))))
+(* typeOf: expr -> typeEnvironment -> tip *)
+let rec typeOf e tyEnv =
+  match e with
+  | CstI _ -> IntTy
+  | Var x -> lookup x tyEnv 
+  | Unary (op, e1) ->
+     let t = typeOf e1 tyEnv in
+     (match op, t with
+      | "not", BoolTy -> BoolTy
+      | "fst", PairTy(t1, t2) -> t1
+      | "snd", PairTy(t1, t2) -> t2
+      | _ -> failwith "Unrecognized Unary operator or bad type."
+     )
+  | Prim (op, e1, e2) ->
+     let (t1,t2) = (typeOf e1 tyEnv, typeOf e2 tyEnv)
+     in (match op, t1, t2 with
+         | "+", IntTy, IntTy -> IntTy
+         | "-", IntTy, IntTy -> IntTy
+         | "*", IntTy, IntTy -> IntTy
+         | "/", IntTy, IntTy -> IntTy
+         | "=", IntTy, IntTy -> BoolTy
+         | "<", IntTy, IntTy -> BoolTy
+         | "min", IntTy, IntTy -> IntTy
+         | "max", IntTy, IntTy -> IntTy
+         | ",", t1, t2 -> PairTy(t1, t2)
+         | _ -> failwith "Bad Prim case"
+        )
+  | Let (x, e1, e2) ->
+     let t1 = typeOf e1 tyEnv in
+     let newEnv = (x, t1)::tyEnv in
+     typeOf e2 newEnv
+  | If (c, e1, e2) ->
+     (match typeOf c tyEnv with
+      | BoolTy -> let (t1, t2) = (typeOf e1 tyEnv, typeOf e2 tyEnv)
+                  in if t1 = t2 then t1
+                     else failwith "Branch types should agree."
+      | _ -> failwith "Condition of 'if' should be a boolean."
+     )
+  | MatchPair (e1, x, y, e2) ->
+     (match typeOf e1 tyEnv with
+      | PairTy(t1,t2) ->
+         let newEnv = (x,t1)::(y,t2)::tyEnv in
+         typeOf e2 newEnv
+      | _ -> failwith "Match works for Pairs only."
+     )
+  | Fun (x, t1, e1) ->
+     failwith "TODO"
+  | App (e1, e2) ->
+     (match typeOf e1 tyEnv with
+      | FunTy(t1, t2) ->
+         let t3 = typeOf e2 tyEnv
+         in if t1 = t3 then t2
+            else failwith "Function's input type and argument type do not agree."
+      | _ -> failwith "Function application of a non-function type"
+     )
