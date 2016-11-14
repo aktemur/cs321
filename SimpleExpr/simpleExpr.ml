@@ -1,3 +1,8 @@
+type tip = IntTy
+         | BoolTy
+         | FunTy of tip * tip
+         | PairTy of tip * tip
+
 type expr = CstI of int
           | Var of string
           | Unary of string * expr
@@ -5,7 +10,7 @@ type expr = CstI of int
           | Let of string * expr * expr
           | If of expr * expr * expr
           | MatchPair of expr * string * string * expr
-          | Fun of string * expr
+          | Fun of string * tip * expr
           | App of expr * expr
 
 type value = Int of int
@@ -63,7 +68,7 @@ let rec eval e env =
          eval e2 newEnv
       | _ -> failwith "Match works for Pairs only you idiot"
      )
-  | Fun(x, body) -> Closure(x, body, env)
+  | Fun(x, t, body) -> Closure(x, body, env)
   | App(e1, e2) ->
      (match eval e1 env with
       | Closure(x, body, fEnv) ->

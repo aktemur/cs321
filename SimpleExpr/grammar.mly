@@ -17,10 +17,12 @@
 %token FST SND
 %token MATCH WITH ARROW
 %token FUN
+%token COLON INTTY BOOLTY 
 
 /* Precedence definitions: */
 /* lowest precedence  */
-%nonassoc IN ELSE ARROW
+%right ARROW      /* right assoc in type annotations. E.g. int -> int -> int */ 
+%nonassoc IN ELSE
 %left EQ
 %nonassoc LEFTANGLE GTEQ
 %left PLUS MINUS
@@ -46,11 +48,12 @@ expression:
   | expression LEFTANGLE expression    { Prim("<", $1, $3) }
   | expression GTEQ expression         { Unary("not", Prim("<", $1, $3)) }
   | LET NAME params EQ expression IN expression
-                                       { Let($2, List.fold_right (fun x e -> Fun(x,e)) $3 $5, $7) }
+                                       { Let($2, List.fold_right (fun (x,t) e -> Fun(x,t,e)) $3 $5, $7) }
   | IF expression THEN expression ELSE expression { If($2, $4, $6) }
   | MATCH expression WITH LPAR NAME COMMA NAME RPAR ARROW expression
                                        { MatchPair($2, $5, $7, $10) }
-  | FUN NAME params ARROW expression   { Fun($2, List.fold_right (fun x e -> Fun(x,e)) $3 $5) }
+  | FUN LPAR NAME COLON aType RPAR params ARROW expression
+                                       { Fun($3, $5, List.fold_right (fun (x,t) e -> Fun(x,t,e)) $7 $9) }
   | appExpr                            { $1 }
 ;
 
@@ -73,7 +76,15 @@ appExpr:
 
 params:
     /* empty */                        { [] }
-  | NAME params                        { $1::$2 }
+  | LPAR NAME COLON aType RPAR params  { ($2,$4)::$6 }
+;
+
+aType:
+    INTTY                              { IntTy }
+  | BOOLTY                             { BoolTy }
+  | aType ARROW aType                  { FunTy($1, $3) }
+  | LPAR aType STAR aType RPAR         { PairTy($2, $4) }
+  | LPAR aType RPAR                    { $2 }
 ;
 
 %%

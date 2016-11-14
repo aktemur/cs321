@@ -33,3 +33,36 @@ Here are a few tests:
 # run "4 * 7 + 3";;
 - : int = 31
 ```
+
+## Types
+
+With the addition of type annotations,
+functions shall be written where each parameter
+is enclosed in parentheses and is written together with its type.
+
+A type is either plain `int` or `bool`,
+a function type (e.g. `int -> bool -> int`),
+or a pair type (e.g. `(int * bool)`).
+
+```ocaml
+# parse "fun (x:int) -> 5";;
+- : expr = Fun ("x", IntTy, CstI 5)
+# parse "fun (x:bool) -> 5";;
+- : expr = Fun ("x", BoolTy, CstI 5)
+# parse "fun (x: int -> int) -> 5";;
+- : expr = Fun ("x", FunTy (IntTy, IntTy), CstI 5)
+# parse "fun (x: int -> int -> int) -> 5";;
+- : expr = Fun ("x", FunTy (IntTy, FunTy (IntTy, IntTy)), CstI 5)
+# parse "fun (x: (int -> bool) -> int) -> 5";;
+- : expr = Fun ("x", FunTy (FunTy (IntTy, BoolTy), IntTy), CstI 5)
+# parse "fun (x: (int * bool) -> int) -> 5";; 
+- : expr = Fun ("x", FunTy (PairTy (IntTy, BoolTy), IntTy), CstI 5)
+# parse "fun (x: int -> (int * int)) -> 5";;  
+- : expr = Fun ("x", FunTy (IntTy, PairTy (IntTy, IntTy)), CstI 5)
+# parse "fun (x: int) (y:bool) (z: int) -> 5";;
+- : expr = Fun ("x", IntTy, Fun ("y", BoolTy, Fun ("z", IntTy, CstI 5)))
+# parse "let f (x:int) (y:int) = x + y in f 3 4";;
+- : expr =
+Let ("f", Fun ("x", IntTy, Fun ("y", IntTy, Prim ("+", Var "x", Var "y"))),
+ App (App (Var "f", CstI 3), CstI 4))
+```
