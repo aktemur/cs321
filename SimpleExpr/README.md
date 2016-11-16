@@ -66,3 +66,46 @@ or a pair type (e.g. `(int * bool)`).
 Let ("f", Fun ("x", IntTy, Fun ("y", IntTy, Prim ("+", Var "x", Var "y"))),
  App (App (Var "f", CstI 3), CstI 4))
 ```
+
+You can use the `typeOf` function to type-check expressions.
+E.g.:
+
+```ocaml
+# typeOf (parse "f 3") [("f", FunTy(IntTy, IntTy))];;
+- : tip = IntTy
+# typeOf (parse "f 3") [("f", FunTy(IntTy, FunTy(IntTy, IntTy)))];;
+- : tip = FunTy (IntTy, IntTy)
+# typeOf (parse "f 3 5") [("f", FunTy(IntTy, FunTy(IntTy, IntTy)))];;
+- : tip = IntTy
+# typeOf (parse "f 3 5")
+  [("f", FunTy(IntTy, FunTy(IntTy, IntTy)));
+   ("g", FunTy(FunTy(IntTy, IntTy), BoolTy))];;
+- : tip = IntTy
+# typeOf (parse "g (f 3)")
+  [("f", FunTy(IntTy, FunTy(IntTy, IntTy)));
+   ("g", FunTy(FunTy(IntTy, IntTy), BoolTy))];;
+- : tip = BoolTy
+# typeOf (parse "x + 5") [("x", IntTy); ("b", BoolTy)];;
+- : tip = IntTy
+# typeOf (parse "x < 5") [("x", IntTy); ("b", BoolTy)];;
+- : tip = BoolTy
+# typeOf (parse "(x, x < 5)") [("x", IntTy); ("b", BoolTy)];;
+- : tip = PairTy (IntTy, BoolTy)
+# typeOf (parse "fst((x, x < 5))") [("x", IntTy); ("b", BoolTy)];;
+- : tip = IntTy
+# typeOf (parse "snd((x, x < 5))") [("x", IntTy); ("b", BoolTy)];;
+- : tip = BoolTy
+# typeOf (parse "match (3, 6) with (v,w) -> v < w") [];;
+- : tip = BoolTy
+# typeOf (parse "if b then 4 else 6") [("x", IntTy); ("b", BoolTy)];;
+- : tip = IntTy
+# typeOf (parse "if x then 4 else 6") [("x", IntTy); ("b", BoolTy)];;
+Exception: Failure "Type error: Condition of 'if' should be a boolean.".
+# typeOf (parse "if b then 3<5 else 6") [("x", IntTy); ("b", BoolTy)];;
+Exception: Failure "Type error: Branch types should agree.".
+# typeOf (parse "f (3<5)") [("f", FunTy(IntTy, IntTy))];;
+Exception:
+Failure "Type error: Function's input type and argument type do not agree.".
+# typeOf (parse "3 5") [];;
+Exception: Failure "Type error: Function application of a non-function type".
+```
