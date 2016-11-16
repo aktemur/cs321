@@ -40,7 +40,7 @@ let rec eval e env =
       | "not", Bool(b) -> Bool(not b)
       | "fst", Pair(v1,v2) -> v1
       | "snd", Pair(v1,v2) -> v2
-      | _ -> failwith "Unrecognized Unary operator or bad value."
+      | _ -> failwith "Eval error: Unrecognized Unary operator or bad value."
      )
   | Prim(op, e1, e2) ->
      let (v1, v2) = (eval e1 env, eval e2 env) in
@@ -54,7 +54,7 @@ let rec eval e env =
       | "min", Int(i1), Int(i2) -> if i1 < i2 then Int(i1) else Int(i2)
       | "max", Int(i1), Int(i2) -> if i1 < i2 then Int(i2) else Int(i1)
       | ",", v1, v2 -> Pair(v1, v2)
-      | _ -> failwith "Unrecognized Prim operator or bad values."
+      | _ -> failwith "Eval error: Unrecognized Prim operator or bad values."
      )
   | Let(x, e1, e2) -> let i = eval e1 env in
                       let newEnv = (x, i)::env in
@@ -62,13 +62,13 @@ let rec eval e env =
   | If(c, e1, e2) -> (match eval c env with
                       | Bool(true) -> eval e1 env
                       | Bool(false) -> eval e2 env
-                      | _ -> failwith "WTF!")
+                      | _ -> failwith "Eval error: If-condition not a bool.")
   | MatchPair(e1, x, y, e2) ->
      (match eval e1 env with
       | Pair(v1,v2) ->
          let newEnv = (x,v1)::(y,v2)::env in
          eval e2 newEnv
-      | _ -> failwith "Match works for Pairs only you idiot"
+      | _ -> failwith "Eval error: Match works for Pairs only."
      )
   | Fun(x, t, body) -> Closure(x, body, env)
   | App(e1, e2) ->
@@ -76,7 +76,7 @@ let rec eval e env =
       | Closure(x, body, fEnv) ->
          let arg = eval e2 env in
          eval body ((x,arg)::fEnv)
-      | _ -> failwith "Whoa"
+      | _ -> failwith "Eval error: Closure needed in application."
      )
 
 (* typeOf: expr -> typeEnvironment -> tip *)
@@ -90,7 +90,7 @@ let rec typeOf e tyEnv =
       | "not", BoolTy -> BoolTy
       | "fst", PairTy(t1, t2) -> t1
       | "snd", PairTy(t1, t2) -> t2
-      | _ -> failwith "Unrecognized Unary operator or bad type."
+      | _ -> failwith "Type error: Unrecognized Unary operator or bad type."
      )
   | Prim (op, e1, e2) ->
      let (t1,t2) = (typeOf e1 tyEnv, typeOf e2 tyEnv)
@@ -104,7 +104,7 @@ let rec typeOf e tyEnv =
          | "min", IntTy, IntTy -> IntTy
          | "max", IntTy, IntTy -> IntTy
          | ",", t1, t2 -> PairTy(t1, t2)
-         | _ -> failwith "Bad Prim case"
+         | _ -> failwith "Type error: Bad Prim case"
         )
   | Let (x, e1, e2) ->
      let t1 = typeOf e1 tyEnv in
@@ -114,15 +114,15 @@ let rec typeOf e tyEnv =
      (match typeOf c tyEnv with
       | BoolTy -> let (t1, t2) = (typeOf e1 tyEnv, typeOf e2 tyEnv)
                   in if t1 = t2 then t1
-                     else failwith "Branch types should agree."
-      | _ -> failwith "Condition of 'if' should be a boolean."
+                     else failwith "Type error: Branch types should agree."
+      | _ -> failwith "Type error: Condition of 'if' should be a boolean."
      )
   | MatchPair (e1, x, y, e2) ->
      (match typeOf e1 tyEnv with
       | PairTy(t1,t2) ->
          let newEnv = (x,t1)::(y,t2)::tyEnv in
          typeOf e2 newEnv
-      | _ -> failwith "Match works for Pairs only."
+      | _ -> failwith "Type error: Match works for Pairs only."
      )
   | Fun (x, t1, e1) ->
      failwith "TODO"
@@ -131,6 +131,6 @@ let rec typeOf e tyEnv =
       | FunTy(t1, t2) ->
          let t3 = typeOf e2 tyEnv
          in if t1 = t3 then t2
-            else failwith "Function's input type and argument type do not agree."
-      | _ -> failwith "Function application of a non-function type"
+            else failwith "Type error: Function's input type and argument type do not agree."
+      | _ -> failwith "Type error: Function application of a non-function type"
      )
