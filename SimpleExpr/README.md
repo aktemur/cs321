@@ -109,3 +109,33 @@ Failure "Type error: Function's input type and argument type do not agree.".
 # typeOf (parse "3 5") [];;
 Exception: Failure "Type error: Function application of a non-function type".
 ```
+
+A few examples with function definitions:
+
+```ocaml
+# run "fun (x:int) (y:int) -> x < y";;
+- : value = Closure ("x", Fun ("y", IntTy, Prim ("<", Var "x", Var "y")), [])
+# typeOf (parse "
+  let x = 5 in
+  let addX (y:int) = x + y in
+  let x = 80 in
+  addX 50") [];;
+- : tip = IntTy
+# run "
+  let x = 5 in
+  let addX (y:int) = x + y in
+  let x = 80 in
+  addX 50";;
+- : value = Int 55
+# typeOf (parse "let add (x:int) (y:int) = x + y in add 5") [];;
+- : tip = FunTy (IntTy, IntTy)
+# run "let add (x:int) (y:int) = x + y in add";;
+- : value = Closure ("x", Fun ("y", IntTy, Prim ("+", Var "x", Var "y")), [])
+# run "let add (x:int) (y:int) = x + y in add 5";;
+- : value = Closure ("y", Prim ("+", Var "x", Var "y"), [("x", Int 5)])
+# run "let add (x:int) (y:int) = x + y in
+       let addFive = add 5 in
+       let x = 99 in
+       addFive 60";;
+- : value = Int 65
+```

@@ -124,8 +124,9 @@ let rec typeOf e tyEnv =
          typeOf e2 newEnv
       | _ -> failwith "Type error: Match works for Pairs only."
      )
-  | Fun (x, t1, e1) ->
-     failwith "TODO"
+  | Fun (x, t1, body) ->
+     let t2 = typeOf body ((x,t1)::tyEnv) in
+     FunTy(t1, t2)
   | App (e1, e2) ->
      (match typeOf e1 tyEnv with
       | FunTy(t1, t2) ->
