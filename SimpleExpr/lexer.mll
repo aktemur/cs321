@@ -32,8 +32,6 @@ let keyword s =
     | "match" -> MATCH
     | "with"  -> WITH
     | "fun"   -> FUN
-    | "int"   -> INTTY
-    | "bool"  -> BOOLTY
     | _       -> NAME s
 }
 
@@ -54,7 +52,6 @@ rule tokenize = parse
   | ')'             { RPAR }
   | ','             { COMMA }
   | "->"            { ARROW }
-  | ':'             { COLON }
   | eof             { EOF }
   | _               { failwith "Lexer error: illegal symbol" }
 

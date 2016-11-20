@@ -2,6 +2,7 @@ type tip = IntTy
          | BoolTy
          | FunTy of tip * tip
          | PairTy of tip * tip
+         | Alpha of int
 
 type typeEnvironment = (string * tip) list
 
@@ -12,7 +13,7 @@ type expr = CstI of int
           | Let of string * expr * expr
           | If of expr * expr * expr
           | MatchPair of expr * string * string * expr
-          | Fun of string * tip * expr
+          | Fun of string * expr
           | App of expr * expr
 
 type value = Int of int
@@ -70,7 +71,7 @@ let rec eval e env =
          eval e2 newEnv
       | _ -> failwith "Eval error: Match works for Pairs only."
      )
-  | Fun(x, t, body) -> Closure(x, body, env)
+  | Fun(x, body) -> Closure(x, body, env)
   | App(e1, e2) ->
      (match eval e1 env with
       | Closure(x, body, fEnv) ->
@@ -79,59 +80,119 @@ let rec eval e env =
       | _ -> failwith "Eval error: Closure needed in application."
      )
 
-(* typeOf: expr -> typeEnvironment -> tip *)
-let rec typeOf e tyEnv =
+
+(* Mutable value to generate fresh type variables *)
+let counter = ref 0
+let freshTyVar() =
+  let i = !counter in counter := i + 1; Alpha(i)
+                                        
+type typeConstraint = tip * tip
+
+(* (===): tip -> tip -> typeConstraint 
+   This is a user-defined infix operator. 
+   Defined for convenience.
+*)                              
+let (===) t1 t2 = (t1,t2)
+
+(* infer: expr -> typeEnvironment -> (tip * (typeConstraint list)) *)
+let rec infer e tyEnv =
   match e with
-  | CstI _ -> IntTy
-  | Var x -> lookup x tyEnv 
+  | CstI _ -> (IntTy, [])
+  | Var x -> (lookup x tyEnv, []) 
   | Unary (op, e1) ->
-     let t = typeOf e1 tyEnv in
-     (match op, t with
-      | "not", BoolTy -> BoolTy
-      | "fst", PairTy(t1, t2) -> t1
-      | "snd", PairTy(t1, t2) -> t2
+     let (t1, c1) = infer e1 tyEnv in
+     (match op with
+      | "not" -> (BoolTy, (t1 === BoolTy)::c1)
+      | "fst" -> let (alpha, beta) = (freshTyVar(), freshTyVar()) in
+                 (alpha, (t1 === PairTy(alpha, beta))::c1)
+      | "snd" -> let (alpha, beta) = (freshTyVar(), freshTyVar()) in
+                 (beta, (t1 === PairTy(alpha, beta))::c1)
       | _ -> failwith "Type error: Unrecognized Unary operator or bad type."
      )
   | Prim (op, e1, e2) ->
-     let (t1,t2) = (typeOf e1 tyEnv, typeOf e2 tyEnv)
-     in (match op, t1, t2 with
-         | "+", IntTy, IntTy -> IntTy
-         | "-", IntTy, IntTy -> IntTy
-         | "*", IntTy, IntTy -> IntTy
-         | "/", IntTy, IntTy -> IntTy
-         | "=", IntTy, IntTy -> BoolTy
-         | "<", IntTy, IntTy -> BoolTy
-         | "min", IntTy, IntTy -> IntTy
-         | "max", IntTy, IntTy -> IntTy
-         | ",", t1, t2 -> PairTy(t1, t2)
+     let ((t1, c1), (t2, c2)) = (infer e1 tyEnv, infer e2 tyEnv)
+     in (match op with
+         | "+" -> (IntTy, (t1 === IntTy)::(t2 === IntTy)::(c1@c2))
+         | "*" -> (IntTy, (t1 === IntTy)::(t2 === IntTy)::(c1@c2))
+         | "-" -> (IntTy, (t1 === IntTy)::(t2 === IntTy)::(c1@c2))
+         | "/" -> (IntTy, (t1 === IntTy)::(t2 === IntTy)::(c1@c2))
+         | "=" -> (BoolTy, (t1 === IntTy)::(t2 === IntTy)::(c1@c2))
+         | "<" -> (BoolTy, (t1 === IntTy)::(t2 === IntTy)::(c1@c2))
+         | "min" -> (IntTy, (t1 === IntTy)::(t2 === IntTy)::(c1@c2))
+         | "max" -> (IntTy, (t1 === IntTy)::(t2 === IntTy)::(c1@c2))
+         | "," -> (PairTy(t1, t2), (c1@c2))
          | _ -> failwith "Type error: Bad Prim case"
         )
   | Let (x, e1, e2) ->
-     let t1 = typeOf e1 tyEnv in
+     let (t1, c1) = infer e1 tyEnv in
      let newEnv = (x, t1)::tyEnv in
-     typeOf e2 newEnv
+     let (t2, c2) = infer e2 newEnv in
+     (t2, c1@c2)
   | If (c, e1, e2) ->
-     (match typeOf c tyEnv with
-      | BoolTy -> let (t1, t2) = (typeOf e1 tyEnv, typeOf e2 tyEnv)
-                  in if t1 = t2 then t1
-                     else failwith "Type error: Branch types should agree."
-      | _ -> failwith "Type error: Condition of 'if' should be a boolean."
-     )
+     let (ct, cc) = infer c tyEnv in
+     let (t1, c1) = infer e1 tyEnv in
+     let (t2, c2) = infer e2 tyEnv in
+     (t1, (t1 === t2)::(ct === BoolTy)::(cc@c1@c2))
   | MatchPair (e1, x, y, e2) ->
-     (match typeOf e1 tyEnv with
-      | PairTy(t1,t2) ->
-         let newEnv = (x,t1)::(y,t2)::tyEnv in
-         typeOf e2 newEnv
-      | _ -> failwith "Type error: Match works for Pairs only."
-     )
-  | Fun (x, t1, body) ->
-     let t2 = typeOf body ((x,t1)::tyEnv) in
-     FunTy(t1, t2)
+     let (t1, c1) = infer e1 tyEnv in
+     let (alpha, beta) = (freshTyVar(), freshTyVar()) in
+     let newEnv = (x, alpha)::(y, beta)::tyEnv in
+     let (t2, c2) = infer e2 newEnv in
+     (t2, (t1 === PairTy(alpha, beta))::(c1@c2))
+  | Fun (x, body) ->
+     let alpha = freshTyVar() in
+     let (t2, c2) = infer body ((x, alpha)::tyEnv) in
+     (FunTy(alpha, t2), c2)
   | App (e1, e2) ->
-     (match typeOf e1 tyEnv with
-      | FunTy(t1, t2) ->
-         let t3 = typeOf e2 tyEnv
-         in if t1 = t3 then t2
-            else failwith "Type error: Function's input type and argument type do not agree."
-      | _ -> failwith "Type error: Function application of a non-function type"
-     )
+     let (t1, c1) = infer e1 tyEnv in
+     let (t2, c2) = infer e2 tyEnv in
+     let beta = freshTyVar() in
+     (beta, (t1 === FunTy(t2, beta))::(c1@c2))
+
+(* occurs: int -> tip -> bool
+   occurs i t: Does type variable i occur in type t?
+*) 
+let rec occurs i t =
+  match t with
+  | IntTy -> false
+  | BoolTy -> false
+  | PairTy(t1, t2) -> occurs i t1 || occurs i t2
+  | FunTy(t1, t2) -> occurs i t1 || occurs i t2
+  | Alpha(j) -> i = j
+
+type substitution = int -> tip
+
+let identitySub = fun i -> Alpha(i)
+
+(* substInType: tip -> substitution -> tip *)
+let rec substInType t sub =
+  match t with
+  | IntTy -> IntTy
+  | BoolTy -> BoolTy
+  | PairTy(t1, t2) ->
+     PairTy(substInType t1 sub, substInType t2 sub)
+  | FunTy(t1, t2) ->
+     FunTy(substInType t1 sub, substInType t2 sub)
+  | Alpha(i) -> sub(i)
+
+let substInConstraints cs sub =
+  List.map (fun (t1,t2) -> (substInType t1 sub, substInType t2 sub)) cs
+
+(* unify: constraint list -> substitution *)
+let rec unify cs =
+  match cs with
+  | [] -> identitySub
+  (* Delete *)
+  | (t1, t2)::cs' when t1 = t2 -> unify cs'
+  (* Decompose *)
+  | (PairTy(t11, t12), PairTy(t21, t22))::cs' -> unify ((t11 === t21)::(t12 === t22)::cs')
+  | (FunTy(t11, t12), FunTy(t21, t22))::cs' -> unify ((t11 === t21)::(t12 === t22)::cs')
+  (* Eliminate *)
+  | (Alpha(i), t)::cs' when not(occurs i t) ->
+     let sub = (fun j -> if j = i then t else identitySub j) in
+     let newCs = substInConstraints cs' sub in
+     let sigma = unify newCs in
+     (fun j -> if j = i then substInType t sigma else sigma j)
+  (* Orient *)
+  | (t, Alpha(i))::cs' -> unify ((Alpha(i), t)::cs')
+  | _ -> failwith "Cannot unify."
