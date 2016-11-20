@@ -34,108 +34,39 @@ Here are a few tests:
 - : int = 31
 ```
 
-## Types
+## Type Inference
 
-With the addition of type annotations,
-functions shall be written where each parameter
-is enclosed in parentheses and is written together with its type.
-
-A type is either plain `int` or `bool`,
-a function type (e.g. `int -> bool -> int`),
-or a pair type (e.g. `(int * bool)`).
-
-```ocaml
-# parse "fun (x:int) -> 5";;
-- : expr = Fun ("x", IntTy, CstI 5)
-# parse "fun (x:bool) -> 5";;
-- : expr = Fun ("x", BoolTy, CstI 5)
-# parse "fun (x: int -> int) -> 5";;
-- : expr = Fun ("x", FunTy (IntTy, IntTy), CstI 5)
-# parse "fun (x: int -> int -> int) -> 5";;
-- : expr = Fun ("x", FunTy (IntTy, FunTy (IntTy, IntTy)), CstI 5)
-# parse "fun (x: (int -> bool) -> int) -> 5";;
-- : expr = Fun ("x", FunTy (FunTy (IntTy, BoolTy), IntTy), CstI 5)
-# parse "fun (x: (int * bool) -> int) -> 5";; 
-- : expr = Fun ("x", FunTy (PairTy (IntTy, BoolTy), IntTy), CstI 5)
-# parse "fun (x: int -> (int * int)) -> 5";;  
-- : expr = Fun ("x", FunTy (IntTy, PairTy (IntTy, IntTy)), CstI 5)
-# parse "fun (x: int) (y:bool) (z: int) -> 5";;
-- : expr = Fun ("x", IntTy, Fun ("y", BoolTy, Fun ("z", IntTy, CstI 5)))
-# parse "let f (x:int) (y:int) = x + y in f 3 4";;
-- : expr =
-Let ("f", Fun ("x", IntTy, Fun ("y", IntTy, Prim ("+", Var "x", Var "y"))),
- App (App (Var "f", CstI 3), CstI 4))
-```
-
-You can use the `typeOf` function to type-check expressions.
+We now have type inference for our language.
+The `run` function reports both the inferred type
+of its input, and the value it reduces to.
+You can use the `typeOf` function to only infer the type
+of an expression.
 E.g.:
 
 ```ocaml
-# typeOf (parse "f 3") [("f", FunTy(IntTy, IntTy))];;
+# typeOf (parse "4 + 5");;
 - : tip = IntTy
-# typeOf (parse "f 3") [("f", FunTy(IntTy, FunTy(IntTy, IntTy)))];;
+# typeOf (parse "fun x -> x + 5");; 
 - : tip = FunTy (IntTy, IntTy)
-# typeOf (parse "f 3 5") [("f", FunTy(IntTy, FunTy(IntTy, IntTy)))];;
-- : tip = IntTy
-# typeOf (parse "f 3 5")
-  [("f", FunTy(IntTy, FunTy(IntTy, IntTy)));
-   ("g", FunTy(FunTy(IntTy, IntTy), BoolTy))];;
-- : tip = IntTy
-# typeOf (parse "g (f 3)")
-  [("f", FunTy(IntTy, FunTy(IntTy, IntTy)));
-   ("g", FunTy(FunTy(IntTy, IntTy), BoolTy))];;
-- : tip = BoolTy
-# typeOf (parse "x + 5") [("x", IntTy); ("b", BoolTy)];;
-- : tip = IntTy
-# typeOf (parse "x < 5") [("x", IntTy); ("b", BoolTy)];;
-- : tip = BoolTy
-# typeOf (parse "(x, x < 5)") [("x", IntTy); ("b", BoolTy)];;
-- : tip = PairTy (IntTy, BoolTy)
-# typeOf (parse "fst((x, x < 5))") [("x", IntTy); ("b", BoolTy)];;
-- : tip = IntTy
-# typeOf (parse "snd((x, x < 5))") [("x", IntTy); ("b", BoolTy)];;
-- : tip = BoolTy
-# typeOf (parse "match (3, 6) with (v,w) -> v < w") [];;
-- : tip = BoolTy
-# typeOf (parse "if b then 4 else 6") [("x", IntTy); ("b", BoolTy)];;
-- : tip = IntTy
-# typeOf (parse "if x then 4 else 6") [("x", IntTy); ("b", BoolTy)];;
-Exception: Failure "Type error: Condition of 'if' should be a boolean.".
-# typeOf (parse "if b then 3<5 else 6") [("x", IntTy); ("b", BoolTy)];;
-Exception: Failure "Type error: Branch types should agree.".
-# typeOf (parse "f (3<5)") [("f", FunTy(IntTy, IntTy))];;
-Exception:
-Failure "Type error: Function's input type and argument type do not agree.".
-# typeOf (parse "3 5") [];;
-Exception: Failure "Type error: Function application of a non-function type".
-```
-
-A few examples with function definitions:
-
-```ocaml
-# run "fun (x:int) (y:int) -> x < y";;
-- : value = Closure ("x", Fun ("y", IntTy, Prim ("<", Var "x", Var "y")), [])
-# typeOf (parse "
-  let x = 5 in
-  let addX (y:int) = x + y in
-  let x = 80 in
-  addX 50") [];;
-- : tip = IntTy
-# run "
-  let x = 5 in
-  let addX (y:int) = x + y in
-  let x = 80 in
-  addX 50";;
-- : value = Int 55
-# typeOf (parse "let add (x:int) (y:int) = x + y in add 5") [];;
-- : tip = FunTy (IntTy, IntTy)
-# run "let add (x:int) (y:int) = x + y in add";;
-- : value = Closure ("x", Fun ("y", IntTy, Prim ("+", Var "x", Var "y")), [])
-# run "let add (x:int) (y:int) = x + y in add 5";;
-- : value = Closure ("y", Prim ("+", Var "x", Var "y"), [("x", Int 5)])
-# run "let add (x:int) (y:int) = x + y in
-       let addFive = add 5 in
-       let x = 99 in
-       addFive 60";;
-- : value = Int 65
+# typeOf (parse "fun x -> if x then 5 else 8");;
+- : tip = FunTy (BoolTy, IntTy)
+# run "4 + 5";;
+- : tip * value = (IntTy, Int 9)
+# run "let add x y = x + y in add 4 6";;
+- : tip * value = (IntTy, Int 10)
+# run "let add x y = x + y in add 4";;  
+- : tip * value =
+(FunTy (IntTy, IntTy),
+ Closure ("y", Prim ("+", Var "x", Var "y"), [("x", Int 4)]))
+# run "let add x y = x + y in add";;  
+- : tip * value =
+(FunTy (IntTy, FunTy (IntTy, IntTy)),
+ Closure ("x", Fun ("y", Prim ("+", Var "x", Var "y")), []))
+# run "let rev p = match p with (x,y) -> (y,x) in rev";;
+- : tip * value =
+(FunTy (PairTy (Alpha 13, Alpha 12), PairTy (Alpha 12, Alpha 13)),
+ Closure ("p", MatchPair (Var "p", "x", "y", Prim (",", Var "y", Var "x")),
+  []))
+# run "let rev p = match p with (x,y) -> (y,x) in rev (4, 5<6)";;
+- : tip * value = (PairTy (BoolTy, IntTy), Pair (Bool true, Int 4))
 ```
