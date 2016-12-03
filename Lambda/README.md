@@ -79,3 +79,18 @@ Lambda ("f",
 # str(run "add (add four two) three");;
 - : string = "(\\f.(\\x.(f (f (f (f (f (f (f (f (f x)))))))))))"
 ```
+
+Multiplication and "predecessor" function:
+
+```ocaml
+# str(run "mult two three");;
+- : string = "(\\f.(\\x.(f (f (f (f (f (f x))))))))"
+# str(run "mult (mult two three) three");;
+- : string =
+"(\\f.(\\x.(f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f x))))))))))))))))))))"
+# str(run "pred (mult two three)");;      
+- : string = "(\\f.(\\x.(f (f (f (f (f x)))))))"
+# str(run "pred (pred (mult two three))");;
+- : string = "(\\f.(\\x.(f (f (f (f x))))))"
+```
+

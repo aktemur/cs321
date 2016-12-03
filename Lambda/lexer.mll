@@ -26,6 +26,8 @@ let keyword s =
     | "four"  -> FOUR
     | "succ"  -> SUCC
     | "add"   -> ADD
+    | "mult"  -> MULT
+    | "pred"  -> PRED
     | _       -> NAME s
 }
 

@@ -10,6 +10,7 @@
 %token DOT
 %token ZERO ONE TWO THREE FOUR
 %token SUCC ADD
+%token MULT PRED
 
 %start main
 %type <expr> main
@@ -37,6 +38,12 @@ atomExpr:
                      App(Var "f", App(App(Var "n", Var "f"), Var "x"))))) } 
   | ADD       { Lambda("m", Lambda("n", Lambda("f", Lambda("x",
                      App(App(Var "m", Var "f"), App(App(Var "n", Var "f"), Var "x")))))) } 
+  | MULT      { Lambda("m", Lambda("n", Lambda("f", Lambda("x",
+                     App(App(Var "m", App(Var "n", Var "f")), Var "x"))))) } 
+  | PRED      { Lambda("n", Lambda("f", Lambda("x",
+                     App(App(App(Var "n", Lambda("g", Lambda("h", App(Var "h", App(Var "g", Var "f"))))),
+                             Lambda("u", Var "x")),
+                         Lambda("u", Var "u"))))) } 
   | LPAR expression RPAR               { $2 }
 ;
 
