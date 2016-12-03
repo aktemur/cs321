@@ -111,3 +111,38 @@ Booleans, "if", and "isZero" predicate:
 - : string = "(\\f.(\\x.(f (f (f (f x))))))"
 ```
 
+Recursion, using fix-point calculation via a Y-combinator.
+Below, we are calculation 3! and 4!.
+
+```ocaml
+# str(run "(Y (\fact.\m.if (isZero m)
+                        one
+                        (mult m (fact (pred m))))
+           ) three");;
+- : string = "(\\f.(\\x.(f (f (f (f (f (f x))))))))"
+# str(run "(Y (\fact.\m.if (isZero m)            
+                        one                      
+                        (mult m (fact (pred m))))
+           ) four");;                            
+- : string =
+"(\\f.(\\x.(f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f x))))))))))))))))))))))))))"
+```
+
+Note that the programs below are pure lambda terms;
+"if", "pred", "mult" and other names with special meanings are
+just syntactic convenience. They are converted to plain lambda terms by the parser.
+E.g:
+
+```ocaml
+# str(parse "(Y (\fact.\m.if (isZero m)        
+                          one                  
+                          (mult m (fact (pred m))))
+             ) four");;                            
+- : string =
+"(((\\h.((\\x.(\\a.((h (x x)) a))) (\\x.(\\a.((h (x x)) a)))))
+(\\fact.(\\m.((((\\cond.(\\then.(\\else.((cond then) else))))
+((\\n.((n (\\x.(\\a.(\\b.b)))) (\\a.(\\b.a)))) m)) (\\f.(\\x.(f x))))
+(((\\m.(\\n.(\\f.(\\x.((m (n f)) x))))) m)
+(fact ((\\n.(\\f.(\\x.(((n (\\g.(\\h.(h (g f))))) (\\u.x)) (\\u.u))))) m)))))))
+(\\f.(\\x.(f (f (f (f x)))))))"
+```

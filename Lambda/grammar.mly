@@ -12,6 +12,7 @@
 %token SUCC ADD
 %token MULT PRED
 %token IF TRUE FALSE ISZERO
+%token YCOMB
 
 %start main
 %type <expr> main
@@ -50,6 +51,9 @@ atomExpr:
   | IF        { Lambda("cond", Lambda("then", Lambda("else", App(App(Var "cond", Var "then"), Var "else")))) }
   | ISZERO    { Lambda("n", App(App(Var "n", Lambda("x", Lambda("a", Lambda("b", Var "b")))),
                                 Lambda("a", Lambda("b", Var "a")))) }
+  /* Definition of Y-combinator taken from PLC, page 85. */
+  | YCOMB     { Lambda("h", App(Lambda("x", Lambda("a", App(App(Var "h", App(Var "x", Var "x")), Var "a"))),
+                                Lambda("x", Lambda("a", App(App(Var "h", App(Var "x", Var "x")), Var "a"))))) } 
   | LPAR expression RPAR               { $2 }
 ;
 

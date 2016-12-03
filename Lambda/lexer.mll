@@ -32,6 +32,7 @@ let keyword s =
     | "true"  -> TRUE
     | "false" -> FALSE
     | "isZero" -> ISZERO
+    | "Y"     -> YCOMB
     | _       -> NAME s
 }
 
