@@ -28,6 +28,10 @@ let keyword s =
     | "add"   -> ADD
     | "mult"  -> MULT
     | "pred"  -> PRED
+    | "if"    -> IF
+    | "true"  -> TRUE
+    | "false" -> FALSE
+    | "isZero" -> ISZERO
     | _       -> NAME s
 }
 

@@ -11,6 +11,7 @@
 %token ZERO ONE TWO THREE FOUR
 %token SUCC ADD
 %token MULT PRED
+%token IF TRUE FALSE ISZERO
 
 %start main
 %type <expr> main
@@ -44,6 +45,11 @@ atomExpr:
                      App(App(App(Var "n", Lambda("g", Lambda("h", App(Var "h", App(Var "g", Var "f"))))),
                              Lambda("u", Var "x")),
                          Lambda("u", Var "u"))))) } 
+  | TRUE      { Lambda("a", Lambda("b", Var "a")) }
+  | FALSE     { Lambda("a", Lambda("b", Var "b")) }
+  | IF        { Lambda("cond", Lambda("then", Lambda("else", App(App(Var "cond", Var "then"), Var "else")))) }
+  | ISZERO    { Lambda("n", App(App(Var "n", Lambda("x", Lambda("a", Lambda("b", Var "b")))),
+                                Lambda("a", Lambda("b", Var "a")))) }
   | LPAR expression RPAR               { $2 }
 ;
 

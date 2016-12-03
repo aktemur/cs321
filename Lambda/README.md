@@ -94,3 +94,20 @@ Multiplication and "predecessor" function:
 - : string = "(\\f.(\\x.(f (f (f (f x))))))"
 ```
 
+Booleans, "if", and "isZero" predicate:
+
+```ocaml
+# str(run "true");;       
+- : string = "(\\a.(\\b.a))"
+# str(run "false");;
+- : string = "(\\a.(\\b.b))"
+# str(run "isZero zero");;
+- : string = "(\\a.(\\b.a))"
+# str(run "isZero one");; 
+- : string = "(\\a.(\\b.b))"
+# str(run "if (isZero (pred one)) three four");;
+- : string = "(\\f.(\\x.(f (f (f x)))))"
+# str(run "if (isZero one) three four");;       
+- : string = "(\\f.(\\x.(f (f (f (f x))))))"
+```
+
