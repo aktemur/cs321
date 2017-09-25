@@ -1,0 +1,183 @@
+[aktemur@ceviz ~]$ ocaml
+        OCaml version 4.05.0
+
+# 3 + 5;;
+- : int = 8
+# 3 + 5  
+  + 6 +
+  3;;
+- : int = 17
+# 4.5 + 6.8;;
+Error: This expression has type float but an expression was expected of type
+         int
+# 4.5 +. 6.8;;
+- : float = 11.3
+# 'a';;
+- : char = 'a'
+# 4;;
+- : int = 4
+# "sdfsadf";;
+- : string = "sdfsadf"
+# if 4 < 5 then 34 + 6 else 88 - 2;;
+- : int = 40
+# if 4 < 5 then 34 + 6 else 88/0;;  
+- : int = 40
+# if 4 < 5 then 'g' else 'b';;      
+- : char = 'g'
+# if 4 < 5 then 'g' else 345;;
+Error: This expression has type int but an expression was expected of type
+         char
+# let x = 5;;
+val x : int = 5
+# x + 7;;
+- : int = 12
+# let y = 4 + 66;;
+val y : int = 70
+# x < y;;
+- : bool = true
+# x;;
+- : int = 5
+# 
+  
+  
+  
+  
+  ;;
+# (4, 5);;
+- : int * int = (4, 5)
+# (4, 'a');;
+- : int * char = (4, 'a')
+# (4, 5, 7);;
+- : int * int * int = (4, 5, 7)
+# let point = (5, 7, 9);;
+val point : int * int * int = (5, 7, 9)
+# point;;
+- : int * int * int = (5, 7, 9)
+# let junk = (4, 'a', true, "asdasd");;
+val junk : int * char * bool * string = (4, 'a', true, "asdasd")
+# let point = (5, 10-2-1, 3*3);;       
+val point : int * int * int = (5, 7, 9)
+#     
+  
+  
+  
+  ;;
+# let (a, b, c) = point;;
+val a : int = 5
+val b : int = 7
+val c : int = 9
+# a+b+c;;
+- : int = 21
+# let (a, _, c) = point;;
+val a : int = 5
+val c : int = 9
+# let (a, _, c) = (67, 'a', true);;
+val a : int = 67
+val c : bool = true
+# let a = a > 100;;
+val a : bool = false
+# a;;
+- : bool = false
+# point;;
+- : int * int * int = (5, 7, 9)
+# b;;
+- : int = 7
+# a;;
+- : bool = false
+# 
+[aktemur@ceviz ~]$ clear
+
+[aktemur@ceviz ~]$ ocaml
+        OCaml version 4.05.0
+
+# let a = 5 + 7;;
+val a : int = 12
+# let b = 5 > 8;;
+val b : bool = false
+# let point = (5, 7, 9);;
+val point : int * int * int = (5, 7, 9)
+# let a = 99;;
+val a : int = 99
+# a + 7;;
+- : int = 106
+# let (a, b, c) = point;;
+val a : int = 5
+val b : int = 7
+val c : int = 9
+# a + b;;
+- : int = 12
+# let a = 55;;
+val a : int = 55
+# a;;
+- : int = 55
+# let point = (77, 88, 99);;
+val point : int * int * int = (77, 88, 99)
+# point;;
+- : int * int * int = (77, 88, 99)
+# a;;
+- : int = 55
+# b;;
+- : int = 7
+# let p = (a, b > 5, a + c);;
+val p : int * bool * int = (55, true, 64)
+# 
+  
+  
+  
+  
+  
+  
+  ;;
+# let square n = n * n;;
+val square : int -> int = <fun>
+# square;;
+- : int -> int = <fun>
+# a;;
+- : int = 55
+# square 4;;
+- : int = 16
+# square b;;
+- : int = 49
+# square (square 4);;
+- : int = 256
+# square square 4;;  
+Error: This function has type int -> int
+       It is applied to too many arguments; maybe you forgot a `;'.
+# square 4 + 5 * 2;;         
+- : int = 26
+# square 4 * 5 + 2;;
+- : int = 82
+# 
+  
+  
+  ;;
+# let max n m = if n - m > 0 then n else m;;
+val max : int -> int -> int = <fun>
+# max 5 9;;
+- : int = 9
+# max 15 9;;
+- : int = 15
+# let maxf n m = if n -. m > 0 then n else m;;
+Error: This expression has type int but an expression was expected of type
+         float
+# let maxf n m = if n -. m >. 0 then n else m;;
+Error: Unbound value >.
+# let maxf n m = if n -. m > 0.0 then n else m;;
+val maxf : float -> float -> float = <fun>
+# 'a' > 'x';;
+- : bool = false
+# char_to_int;;
+Error: Unbound value char_to_int
+Hint: Did you mean char_of_int?
+# int_of_char;;
+- : char -> int = <fun>
+# int_of_char 'a';;
+- : int = 97
+# int_of_char 'A';;
+- : int = 65
+# let toUC c = char_of_int ((int_of_char c) - 32);;
+val toUC : char -> char = <fun>
+# toUC 'a';;
+- : char = 'A'
+# let max n m = if n > m then n else m;;           
+val max : 'a -> 'a -> 'a = <fun>
