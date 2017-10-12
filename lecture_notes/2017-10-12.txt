@@ -1,0 +1,122 @@
+# let rec makeList x n =
+    match n with
+    | 0 -> []
+    | m -> x::makeList x (n-1);;
+val makeList : 'a -> int -> 'a list = <fun>
+# makeList 3 40;;
+- : int list =
+[3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3;
+ 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3;
+ 3; 3; 3; 3]
+# makeList 3 999999;;
+Stack overflow during evaluation (looping recursion?).
+# let rec makeList x n acc =
+    if n = 0 then acc
+    else makeList x (n-1) (x::acc);;
+val makeList : 'a -> int -> 'a list -> 'a list = <fun>
+# makeList 3 40;;
+- : int list -> int list = <fun>
+# makeList 3 40 [];;
+- : int list =
+[3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3;
+ 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3;
+ 3; 3; 3; 3]
+# makeList 3 999999 [];;
+- : int list =
+[3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3;
+ 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3;
+ 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3;
+ 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3;
+ 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3;
+ 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3;
+ 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3;
+ 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3;
+ 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3;
+ 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3;
+ 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3;
+ 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3;
+ 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3;
+ 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3;
+ 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3;
+ 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3;
+ 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; 3; ...]
+# let rec makeList x n acc =
+    if n = 0 then acc
+    else makeList x (n-1) (x::acc);;
+val makeList : 'a -> int -> 'a list -> 'a list = <fun>
+# let rec squareUp lst acc =
+    match lst with
+    | [] -> acc
+    | x::xs -> squareUp xs ((x*x)::acc);;
+val squareUp : int list -> int list -> int list = <fun>
+# squareUp [1;2;3;4;5] [];;
+- : int list = [25; 16; 9; 4; 1]
+# List.rev(squareUp [1;2;3;4;5] []);;
+- : int list = [1; 4; 9; 16; 25]
+# let squareUp lst =
+    let rec helper lst acc =
+      match lst with
+      | [] -> acc
+      | x::xs -> helper xs ((x*x)::acc)
+    in List.rev (helper lst []);;
+val squareUp : int list -> int list = <fun>
+# squareUp [1;2;3;4];;
+- : int list = [1; 4; 9; 16]
+# let rec factorial n acc =
+    if n = 0 then acc
+    else factorial (n-1) (n*acc);;
+val factorial : int -> int -> int = <fun>
+# factorial 5 1;;
+- : int = 120
+# factorial 6 1;;
+- : int = 720
+# let factorial n =
+    let rec helper m acc =
+      if m = 0 then acc else helper (m-1) (m*acc)
+    in helper n 1;;
+val factorial : int -> int = <fun>
+# factorial 5;;
+- : int = 120
+# factorial 6;;
+- : int = 720
+# let power x n =
+    let rec helper m acc =
+      if m = 0 then acc
+      else helper (m-1) (x*acc)
+    in helper n 1;;
+val power : int -> int -> int = <fun>
+# power 2 7;;
+- : int = 128
+# power 3 4;;
+- : int = 81
+# let rec power x n acc =
+    if n = 0 then acc else power x (n-1) (x*acc);;
+val power : int -> int -> int -> int = <fun>
+# power 2 7 1;;
+- : int = 128
+# power 3 4 1;;
+- : int = 81
+# let fib n =
+    let rec helper m fibNMinus1 fibNMinus2 =
+      if n = m then fibNMinus1 + fibNMinus2
+      else helper (m+1) (fibNMinus1+fibNMinus2) fibNMinus1
+    in if n = 0 then 1
+       else if n = 1 then 1
+       else helper 2 1 1;;
+val fib : int -> int = <fun>
+# fib 0;;
+- : int = 1
+# fib 1;;
+- : int = 1
+# fib 2;;
+- : int = 2
+# fib 3;;
+- : int = 3
+# fib 4;;
+- : int = 5
+# fib 5;;
+- : int = 8
+# fib 6;;
+- : int = 13
+# fib 7;;
+- : int = 21
