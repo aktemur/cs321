@@ -1,0 +1,52 @@
+# type weekday = Mon | Tue | Wed | Thu | Fri | Sat | Son;;
+type weekday = Mon | Tue | Wed | Thu | Fri | Sat | Son
+# let firstDayOfWeek = ;;
+Error: Syntax error
+# type weekday = Mon | Tue | Wed | Thu | Fri | Sat | Sun;;
+type weekday = Mon | Tue | Wed | Thu | Fri | Sat | Sun
+# let firstDayOfWeek = Mon;;
+val firstDayOfWeek : weekday = Mon
+# let x = 5;;
+val x : int = 5
+# let dayAfter day = 
+    match day with
+    | Mon -> Tue
+    | Tue -> Wed
+    | Wed -> Thu
+    | Thu -> Fri
+    | Fri -> Sat
+    | Sat -> Sun
+    | Sun -> Mon;;
+val dayAfter : weekday -> weekday = <fun>
+# dayAfter Thu;;
+- : weekday = Fri
+# dayAfter firstDayOfWeek;;
+- : weekday = Tue
+# let today = Mon;;
+val today : weekday = Mon
+# dayAfter today;;
+- : weekday = Tue
+# type student = Undergrad of string | Grad of string;;
+type student = Undergrad of string | Grad of string
+# let john = Undergrad "John Sawyer";;
+val john : student = Undergrad "John Sawyer"
+# john;;
+- : student = Undergrad "John Sawyer"
+# let mike = Grad "Mike Jordan";;
+val mike : student = Grad "Mike Jordan"
+# #utop_save "2017-10-16.txt";;
+# type mylist = Empty | Cons int * mylist;;
+Error: Syntax error
+# type mylist = Empty | Cons of int * mylist;;
+type mylist = Empty | Cons of int * mylist
+# let junk = Cons(3, Cons(4, Cons(5, Empty)));;
+val junk : mylist = Cons (3, Cons (4, Cons (5, Empty)))
+# let rev lst = 
+    let rec helper lst acc =
+      match lst with
+      | Empty -> acc
+      | Cons(x, xs) -> helper xs (Cons(x, acc))
+    in helper lst Empty;;
+val rev : mylist -> mylist = <fun>
+# rev junk;;
+- : mylist = Cons (5, Cons (4, Cons (3, Empty)))
