@@ -250,7 +250,7 @@ let enumerateWithFoldLeft lst =
   \end{solutionbox}
 
   
-  \vspace{1em}
+  \vspace{2em}
   \fbox{\parbox{0.9\textwidth}{
       \textbf{In the problems below, you may use explicit recursion
         or the library functions such as \texttt{map}, \texttt{fold\_left},
@@ -270,13 +270,14 @@ let enumerateWithFoldLeft lst =
   \url{http://caml.inria.fr/pub/docs/manual-ocaml/libref/List.html}
 
 
+  \vspace{2em}
   \fbox{\textbf{In the problems below, your implementation is required to be tail-recursive.}}
   \vspace{1em}
 
   \question
   Write a function \texttt{positivesOf : int list -> int list}
   that returns the positive numbers in its input.
-  \begin{minted}{fsharp}
+  \begin{minted}{ocaml}
     # positivesOf [-4; 9; 2; -8; -3; 1; 0];;
     - : int list = [9; 2; 1]
   \end{minted}
@@ -298,13 +299,13 @@ let positivesOf lst =
   \texttt{enumerate : 'a list -> ('a * int) list} 
   that enumerates the elements of its input with their index.
   The first element in a list is considered to be at index 0.
-  \begin{minted}{fsharp}
+  \begin{minted}{ocaml}
     # enumerate ['a';'b';'c';'d';'e'];;
     - : (char * int) list = [('a',0);('b',1);('c',2);('d',3);('e',4)]
   \end{minted}
   \textbf{Extra exercise:} Solve the same problem when the elements are 
   enumerated from right to left. E.g:
-  \begin{minted}{fsharp}
+  \begin{minted}{ocaml}
     # enumerate ['a';'b';'c';'d';'e'];;
     - : (char * int) list = [('a',4);('b',3);('c',2);('d',1);('e',0)]
   \end{minted}
@@ -318,6 +319,188 @@ let enumerate lst =
     | x::xs -> let (eList, index) = acc
                in aux xs ((x, index)::eList, index+1)
   in List.rev(fst(aux lst ([], 0)))
+    \end{minted}
+  \end{solutionbox}
+
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %% DATA TYPES
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  
+  \question
+  Define a data type to represent \emph{playing cards}.
+  Each playing card has a \emph{suit}, which is one of
+  $\clubsuit, \spadesuit, \diamondsuit, \heartsuit$.
+  A playing card is either ace, king, queen, jack, or an ordinary card.
+  An ordinary card is associated with a number.
+
+  \begin{solutionbox}{6.5cm}
+    \begin{minted}{ocaml}
+type suit = Club | Spade | Diamond | Heart
+
+type card = Ace of suit
+          | King of suit
+          | Queen of suit
+          | Jack of suit
+          | Ordinary of suit * int
+(* Alternatively: *)
+
+type rank = Ace | King | Queen | Jack | Ordinary of int
+
+type card = Card of suit * rank
+    \end{minted}
+  \end{solutionbox}
+
+
+  \vspace{1em}
+  \fbox{\textbf{The problems below are based on the following definition of a binary tree:}}
+  \vspace{1em}
+
+  \begin{minted}{ocaml}
+type 'a binTree = BTLeaf of 'a
+                | BTNode of 'a * 'a binTree * 'a binTree
+  \end{minted}
+
+  \question
+  Write a function \texttt{areIsomorphic} that takes two binary trees and determines
+  whether the trees are isomorphic. Two trees are said to be isomorphic if their shapes are the same,
+  regardless of the values in the trees.
+
+  \begin{solutionbox}{4.5cm}
+    \begin{minted}{ocaml}
+let rec areIsomorphic t1 t2 =
+  match t1, t2 with
+  | BTLeaf v1, BTLeaf v2 -> true
+  | BTLeaf v1, _ -> false
+  | _, BTLeaf v2 -> false
+  | BTNode(v1,t11,t12), BTNode(v2,t21,t22) ->
+      areIsomorphic t11 t21 && areIsomorphic t12 t22
+    \end{minted}
+  \end{solutionbox}
+
+
+  \question
+  Write a funcion \texttt{collect} that takes a binary tree \texttt{t} and 
+  a predicate function \texttt{p}, and returns
+  all the elements of \texttt{t} that satisfy \texttt{p} in pre-order.
+  
+  \textbf{Extra challenge:} Can you solve this problem without using the list append operator (\texttt{@})?
+
+  \begin{solutionbox}{3.5cm}
+    \begin{minted}{ocaml}
+let rec collect t p =
+  match t with
+  | BTLeaf v -> if p v then [v] else []
+  | BTNode (v, t1, t2) ->
+    (if p v then [v] else []) @ collect t1 p @ collect t2 p
+    \end{minted}
+  \end{solutionbox}
+
+
+  \question
+  Write a funcion \texttt{isBST} that takes a binary tree \texttt{t} and 
+  determines whether \texttt{t} is a \emph{binary search tree}.
+  For a tree to be a binary search tree, 
+  all the elements to the left of a root must be less and all the elements to the right of a 
+  root must be larger than the root.
+  Hint: Flattening the tree first may help you.
+
+  \begin{solutionbox}{6cm}
+    \begin{minted}{ocaml}
+let rec isBST t =
+  let rec flatten t =
+    match t with
+    | BTLeaf v -> [v]
+    | BTNode(v,t1,t2) -> flatten t1 @ [v] @ flatten t2
+  in let rec isSorted lst =
+    match lst with
+    | [] -> true
+    | [x] -> true
+    | x::y::rest -> x < y && isSorted (y::rest)
+  in isSorted (flatten t)
+    \end{minted}
+  \end{solutionbox}
+
+  \question
+  Write a function \texttt{gotcha} that takes a predicate \texttt{p} and a binary tree
+  \texttt{bt}. The function returns the \texttt{Some} of the \emph{first} element
+  that satisfies \texttt{p} according to the in-order traversal of \texttt{bt}.
+  (Reminder: in-order means left-root-right.)
+  If there is no such element, the function should return \texttt{None}.
+  Are you confused by \texttt{Some} and \texttt{None}?
+  Then you have to read the ``Data Types'' slides.
+
+  \begin{solutionbox}{4.5cm}
+    \begin{minted}{ocaml}
+let rec gotcha p bt =
+  match bt with
+  | BTLeaf v -> if p v then Some v else None
+  | BTNode (v, bt1, bt2) ->
+     (match gotcha p bt1 with
+      | Some v' -> Some v'
+      | None -> if p v then Some v else gotcha p bt2)
+    \end{minted}
+  \end{solutionbox}
+
+
+  \vspace{1em}
+  \fbox{\textbf{The problems below are based on the following definition:}}
+  \vspace{1em}
+
+  \begin{minted}{ocaml}
+    type cutelist = Empty
+                  | Cons of int * cutelist
+  \end{minted}
+
+  Bart is a funny guy who likes to use his own definitions
+  of data types as much as possible.
+  Instead of the built-in lists, he decides to use a data type
+  named \texttt{cutelist} (given above) to represent integer lists.
+  For instance, instead of the list [1;2;3;4], Bart uses
+  \begin{minted}{ocaml}
+    Cons(1, Cons(2, Cons(3, Cons(4,Empty))))
+  \end{minted}
+
+  \question
+  Write an OCaml function \texttt{toCList} that takes
+  an \texttt{int list} and returns the 
+  corresponding \texttt{cutelist} representation.
+  \textbf{Implement \texttt{toCList} using \texttt{List.fold\_right}.
+    No explicit recursion is allowed!}
+  \begin{minted}{ocaml}
+# toCList [1;2;3;4];;
+- : cutelist = Cons (1,Cons (2,Cons (3,Cons (4,Empty))))
+# toCList [3;6;8;2;7];;
+- : cutelist = Cons (3,Cons (6,Cons (8,Cons (2,Cons (7,Empty)))))
+  \end{minted}
+
+  \begin{solutionbox}{2cm}
+    \begin{minted}{ocaml}
+let toCList lst =
+  List.fold_right (fun x acc -> Cons(x,acc)) lst Empty
+    \end{minted}
+  \end{solutionbox}
+
+
+  \question
+  Write an OCaml function \texttt{reverse} that takes a cutelist and 
+  returns its reverse.
+  A solution that converts the cutelist to a regular list,
+  then reverses the list, and finally converts the reversed
+  list to a cutelist via \texttt{toCList}
+  is NOT acceptable.
+  \begin{minted}{ocaml}
+# reverse (Cons (3,Cons (6,Cons (8,Cons (2,Cons (7,Empty))))));;
+- : cutelist = Cons (7,Cons (2,Cons (8,Cons (6,Cons (3,Empty)))))
+  \end{minted}
+
+  \begin{solutionbox}{4cm}
+    \begin{minted}{ocaml}
+let rec reverse clst =
+  let rec helper clst acc =
+    match clst with
+    | Empty -> acc
+    | Cons(x,rest) -> helper rest (Cons(x,acc))
+  in helper clst Empty
     \end{minted}
   \end{solutionbox}
 
