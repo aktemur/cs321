@@ -71,6 +71,26 @@ let enumerate lst =
                in aux xs ((x, index)::eList, index+1)
   in List.rev(fst(aux lst ([], 0)))
 
+let rec pick n lst =
+  match lst with
+  | [] -> []
+  | x::xs -> if n <= 0 then []
+             else x::pick (n-1) xs
+
+let rec assoc a lst =
+  let rec helper lst acc =
+    match lst with
+    | [] -> (match acc with
+             | [] -> failwith "Not found"
+             | b::bs -> b)
+    | (x,b)::xs -> helper xs (if x = a then b::acc else acc)
+  in helper lst []
+
+let flatten lsts =
+  List.fold_right (fun lst a -> lst@a) lsts []
+
+let sums lst =
+  List.rev (snd(List.fold_left (fun a x -> (fst a + x, (fst a + x)::snd a)) (0, []) lst))
 
 (* DATA TYPES *)
 
@@ -89,6 +109,10 @@ type rank = Ace | King | Queen | Jack | Ordinary of int
 type card = Card of suit * rank
 
 *)
+
+type number = Real of int * int * int
+            | Rational of int * int
+            | Complex of float * float
 
 (* **************************************************** *)
 type 'a binTree = BTLeaf of 'a

@@ -23,6 +23,33 @@
 \end{center}
 
 \begin{questions}
+  \question
+  Given the following OCaml code.
+  \begin{minted}{ocaml}
+    let x = 3;;
+    let f y = x * y;;
+    let x = 5;;
+    let z = f 2;;
+    let k = f x;;
+    x = 10;;
+    let w = f x;;
+    let x = "hi";;
+  \end{minted}
+  
+  \begin{parts}
+    \part What are the values of \texttt{z}, \texttt{k}, and \texttt{w}?
+    \begin{solutionbox}{1cm}
+      6, 15, 15
+    \end{solutionbox}
+    
+    \part Does the last line cause a type error?
+    If not, what is the final value of \texttt{x}?
+    \begin{solutionbox}{1cm}
+      No error. The value is \verb|"hi"|.
+    \end{solutionbox}
+  \end{parts}
+
+  
   \question 
   Write a function \texttt{stringy : string list -> (string * int) list}
   that associates each string in its input with the length of the string.
@@ -322,6 +349,122 @@ let enumerate lst =
     \end{minted}
   \end{solutionbox}
 
+  \question
+  Write an OCaml function named \texttt{pick} that takes an integer \texttt{n} and
+  a list named \texttt{lst}. The function returns the first \texttt{n}
+  elements of \texttt{lst}. If \texttt{lst} has less than \texttt{n} elements,
+  all the elements are returned.
+
+  \textbf{For this question, you have to use explicit recursion;
+    you may not use any library function including '\texttt{@}'.
+    Points will be deducted if your implementation unnecessarily traverses all the
+    elements of \texttt{lst}.
+  }
+  \begin{minted}{ocaml}
+    # pick;;
+    - : int -> 'a list -> 'a list = <fun>
+    # pick 5 [8;3;7;1;0;9;2;6];;
+    - : int list = [8; 3; 7; 1; 0]
+    # pick 5 [8;3;7];;          
+    - : int list = [8; 3; 7]
+  \end{minted}
+  \strut
+
+  \begin{solutionbox}{3.5cm}
+    \begin{minted}{ocaml}
+let rec pick n lst =
+  match lst with
+  | [] -> []
+  | x::xs -> if n <= 0 then []
+             else x::pick (n-1) xs
+    \end{minted}
+  \end{solutionbox}
+
+  
+  \question
+  Write an OCaml function named \texttt{assoc} that takes a value \texttt{a} and
+  a list of pairs named \texttt{lst}.
+  The function returns the \textbf{rightmost} value associated with key \texttt{a}
+  in \texttt{lst}.
+
+  That is, \texttt{assoc a [ ...; (a,b); ...] = b} if \texttt{(a,b)} is the \textbf{rightmost}
+  pair that contains \texttt{a} as its first item.
+  If there is no value associated with \texttt{a} in the list \texttt{lst},
+  fail with the error message \texttt{"Not found"}.
+
+  Implement \texttt{assoc} using explicit recursion.
+  Your solution should do a \textbf{single pass} over the list.
+  In particular, a solution that first reverses the list
+  and then finds the leftmost association is not acceptable.
+  You may want to use a helper function in this problem.
+  
+  \begin{minted}{ocaml}
+# assoc;;
+- : 'a -> ('a * 'b) list -> 'b = <fun>
+# assoc 5 [(8,'e'); (6,'s'); (5,'f'); (2,'t'); (5,'h'); (5,'p'); (9,'n')];;
+- : char = 'p'
+# assoc 4 [(8,'e'); (6,'s'); (5,'f'); (2,'t'); (5,'h'); (5,'p'); (9,'n')];;
+Exception: Failure "Not found".
+  \end{minted}
+
+  \begin{solutionbox}{5cm}
+    \begin{minted}{ocaml}
+let rec assoc a lst =
+  let rec helper lst acc =
+    match lst with
+    | [] -> (match acc with
+             | [] -> failwith "Not found"
+             | b::bs -> b)
+    | (x,b)::xs -> helper xs (if x = a then b::acc else acc)
+  in helper lst []
+    \end{minted}
+  \end{solutionbox}
+
+  
+  \question
+  Write an OCaml function named \texttt{flatten} that takes a list of lists,
+  and returns a list where all the elements of the argument
+  are concatenated in the same order.
+
+  Implement \texttt{flatten} using \texttt{fold\_right}. 
+
+  \begin{minted}{ocaml}
+# flatten;; 
+- : 'a list list -> 'a list = <fun>
+# flatten [[4;5;8]; [2;1;9;8]; [3]; [8;5;7;6]];;
+- : int list = [4; 5; 8; 2; 1; 9; 8; 3; 8; 5; 7; 6]
+  \end{minted}
+
+  \begin{solutionbox}{2cm}
+    \begin{minted}{ocaml}
+let flatten lsts =
+  List.fold_right (fun lst a -> lst@a) lsts []
+    \end{minted}
+  \end{solutionbox}
+
+  
+  \question
+  Write an OCaml function named \texttt{sums}
+  that takes a list and produces another where
+  each element is the accumulative
+  sum of the elements up to and including the corresponding element in the input list.
+  \textbf{Implement the function using \texttt{fold\_left} (and possibly
+  other library functions), but without explicit recursion.}
+
+  \begin{minted}{ocaml}
+  # sums;;
+  - : int list -> int list = <fun>
+  # sums [6;3;9;1;7;2];;
+  - : int list = [6; 9; 18; 19; 26; 28]
+  \end{minted}
+  
+  \begin{solutionbox}{2cm}
+    \begin{minted}{ocaml}
+let sums lst =
+  List.rev (snd(List.fold_left (fun a x -> (fst a + x, (fst a + x)::snd a)) (0, []) lst))
+    \end{minted}
+  \end{solutionbox}
+
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   %% DATA TYPES
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -350,7 +493,37 @@ type card = Card of suit * rank
     \end{minted}
   \end{solutionbox}
 
+  
+  \question
+  Define an OCaml data type to represent numbers.
+  There are three kinds of numbers:
+  \begin{itemize}
+  \item a \emph{Real number}, which is defined by three integer values as its
+    \emph{significand}, \emph{base}, and the \emph{exponent}.
+    E.g.:
 
+    $$12.3456 = \underbrace{123456}_\textrm{\scriptsize significand}~\times~\underbrace{10}_\textrm{\scriptsize base}\!\!\!\!\!\!^{\overbrace{-4}^\textrm{\scriptsize exponent}}$$
+    
+  \item a \emph{Rational number}, which is defined as a quotient of two integers
+    (i.e. the numerator and the denominator).
+    E.g: $\frac{\textrm{\normalsize 42}}{\textrm{\normalsize 79}}$
+    
+  \item a \emph{Complex} number, which is defined by a \emph{real part} and an \emph{imaginary part},
+    both of which are floating point numbers. E.g.:
+
+    $$ \underbrace{3.14}_\textrm{\scriptsize real} + \underbrace{67.891}_\textrm{\scriptsize imaginary} i$$
+    
+  \end{itemize}
+  
+  \begin{solutionbox}{2.5cm}
+    \begin{minted}{ocaml}
+type number = Real of int * int * int
+            | Rational of int * int
+            | Complex of float * float
+    \end{minted}
+  \end{solutionbox}
+
+  
   \vspace{1em}
   \fbox{\textbf{The problems below are based on the following definition of a binary tree:}}
   \vspace{1em}
