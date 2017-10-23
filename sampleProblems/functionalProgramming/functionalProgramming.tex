@@ -3,7 +3,7 @@
 %\printanswers
 \noprintanswers
 
-\usepackage{amsmath,bigstrut,minted,url}
+\usepackage{amsmath,bigstrut,minted,url,graphicx}
 
 \pagestyle{headandfoot}
 \runningheadrule
@@ -49,6 +49,169 @@
     \end{solutionbox}
   \end{parts}
 
+
+  \question
+  Consider the following OCaml program:
+  \begin{minted}{ocaml}
+    let a = 5
+    in (let b = 3 in a + b) + (let b = 9 in a * b)
+  \end{minted}
+  Assuming we start with the empty environment,
+  \begin{parts}
+    \part what's the environment in which the expression \mintinline{ocaml}{a + b}
+    is evaluated?
+    \begin{solutionbox}{1cm}
+      \{b $\mapsto$ 3, a $\mapsto$ 5\}
+    \end{solutionbox}
+
+    \part what's the environment in which the expression \mintinline{ocaml}{a * b}
+    is evaluated?
+    \begin{solutionbox}{1cm}
+      \{b $\mapsto$ 9, a $\mapsto$ 5\}
+    \end{solutionbox}
+
+    \part what's the environment after the expression is evaluated?
+    \begin{solutionbox}{1cm}
+      \{~\}
+    \end{solutionbox}
+
+    \part what does the expression evaluate to?
+    \begin{solutionbox}{1cm}
+      53
+    \end{solutionbox}
+  \end{parts}
+
+  \question
+  Consider the following OCaml program:
+  \begin{minted}{ocaml}
+    (let c = 3 in c + c) + (let c = 9 in c * c)
+  \end{minted}
+  Assuming we start with the empty environment,
+  \begin{parts}
+    \part what's the environment in which the expression \mintinline{ocaml}{c + c}
+    is evaluated?
+    \begin{solutionbox}{1cm}
+      \{c $\mapsto$ 3\}
+    \end{solutionbox}
+
+    \part what's the environment in which the expression \mintinline{ocaml}{c * c}
+    is evaluated?
+    \begin{solutionbox}{1cm}
+      \{c $\mapsto$ 5\}
+    \end{solutionbox}
+
+    \part what's the environment after the expression is evaluated?
+    \begin{solutionbox}{1cm}
+      \{~\}
+    \end{solutionbox}
+
+    \part what does the expression evaluate to?
+    \begin{solutionbox}{1cm}
+      87
+    \end{solutionbox}
+  \end{parts}
+  
+
+  \question
+  Consider the following OCaml program:
+
+  \includegraphics[width=5cm]{env1.pdf}
+  
+  Assuming we start with the empty environment,
+  \begin{parts}
+    \part what's the environment in which expression 1 is evaluated?
+    \begin{solutionbox}{1cm}
+      \{x $\mapsto$ 7\}
+    \end{solutionbox}
+
+    \part what's the environment in which expression 2 is evaluated?
+    \begin{solutionbox}{1cm}
+      \{s $\mapsto$ 49, x $\mapsto$ 7\}
+    \end{solutionbox}
+
+    \part what's the environment in which the expression \mintinline{ocaml}{s * s} is evaluated?
+    \begin{solutionbox}{1cm}
+      \{s $\mapsto$ 49, x $\mapsto$ 7\}
+    \end{solutionbox}
+
+    \part what's the environment in which expression 3 is evaluated?
+    \begin{solutionbox}{1cm}
+      \{q $\mapsto$ 2401, s $\mapsto$ 49, x $\mapsto$ 7\}
+    \end{solutionbox}
+  \end{parts}
+
+  \question
+  Consider the following OCaml program:
+  \begin{minted}{ocaml}
+    let x =
+      let a = 5
+      in let b = 8
+         in a + b
+    in x * 2
+  \end{minted}
+  Assuming we start with the empty environment,
+  \begin{parts}
+    \part what's the environment in which the expression \mintinline{ocaml}{a + b}
+    is evaluated?
+    \begin{solutionbox}{1cm}
+      \{b $\mapsto$ 8, a $\mapsto$ 5\}
+    \end{solutionbox}
+
+    \part what's the environment in which the expression \mintinline{ocaml}{x * 2}
+    is evaluated?
+    \begin{solutionbox}{1cm}
+      \{x $\mapsto$ 13\}
+    \end{solutionbox}
+
+    \part what's the environment after the expression is evaluated?
+    \begin{solutionbox}{1cm}
+      \{~\}
+    \end{solutionbox}
+
+    \part what does the expression evaluate to?
+    \begin{solutionbox}{1cm}
+      26
+    \end{solutionbox}
+  \end{parts}
+
+
+  \question
+  Consider the following OCaml program:
+  \begin{minted}{ocaml}
+    let x =
+      let x = 5
+      in let x = 8
+         in x + x
+    in x * 2
+  \end{minted}
+  Assuming we start with the empty environment,
+  \begin{parts}
+    \part what's the environment in which the expression \mintinline{ocaml}{x + x}
+    is evaluated?
+    \begin{solutionbox}{1cm}
+      \{x $\mapsto$ 8, x $\mapsto$ 5\} (5 is shadowed)
+    \end{solutionbox}
+
+    \part what's the environment in which the expression \mintinline{ocaml}{x * 2}
+    is evaluated?
+    \begin{solutionbox}{1cm}
+      \{x $\mapsto$ 16\}
+    \end{solutionbox}
+
+    \part what's the environment after the expression is evaluated?
+    \begin{solutionbox}{1cm}
+      \{~\}
+    \end{solutionbox}
+
+    \part what does the expression evaluate to?
+    \begin{solutionbox}{1cm}
+      32
+    \end{solutionbox}
+  \end{parts}
+ 
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  %%%
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   
   \question 
   Write a function \texttt{stringy : string list -> (string * int) list}
