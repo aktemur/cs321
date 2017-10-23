@@ -465,6 +465,34 @@ let sums lst =
     \end{minted}
   \end{solutionbox}
 
+  \question
+  Run-length encoding (RLE) is a data compression technique
+  in which maximal (non-empty) consecutive
+  occurrences of a value are replaced by a pair consisting
+  of the value and a counter showing how many times
+  the value was repeated in that consecutive sequence.
+  For example, RLE would encode the list
+  \texttt{[1;1;1;2;2;2;2;3;1;1;1;1;1]}
+  as \texttt{[(1,3);(2,4);(3,1);(1;5)]}.
+
+  Write a function \texttt{rle} that takes a list
+  and encodes it using the RLE technique.
+  You may not use any library functions.
+
+  \begin{solutionbox}{4cm}
+    \begin{minted}{ocaml}
+let rec rle lst =
+    match lst with
+    | [] -> []
+    | x::xs -> (match rle xs with
+                | [] -> [(x, 1)]
+                | (y,n)::ys -> if x = y then (y, n+1)::ys
+                               else (x, 1)::(y, n)::ys)
+    \end{minted}
+  \end{solutionbox}
+
+
+  
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   %% DATA TYPES
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -485,8 +513,8 @@ type card = Ace of suit
           | Queen of suit
           | Jack of suit
           | Ordinary of suit * int
-(* Alternatively: *)
 
+(* Alternatively: *)
 type rank = Ace | King | Queen | Jack | Ordinary of int
 
 type card = Card of suit * rank
@@ -678,6 +706,27 @@ let rec reverse clst =
   \end{solutionbox}
 
   
+  \question
+  Write a function named \texttt{append} that takes
+  two \texttt{cutelist}s and returns their concatenation.
+  Do NOT consider converting the \texttt{cutelist} values to
+  built-in lists to solve this problem.
+  
+  \begin{minted}{ocaml}
+    # append (Cons(3, Cons(4, Cons(5, Empty)))) (Cons(9, Cons(8, Empty)));;
+    - : int cutelist = Cons(3,Cons(4,Cons(5,Cons(9,Cons(8,Empty)))))
+  \end{minted}
+
+  \begin{solutionbox}{3cm}
+    \begin{minted}{ocaml}
+let rec append clst1 clst2 =
+  match clst1 with
+  | Empty -> clst2
+  | Cons(i, tail) -> Cons(i, append tail clst2)
+    \end{minted}
+  \end{solutionbox}
+
+    
 \end{questions}
 
 \end{document}

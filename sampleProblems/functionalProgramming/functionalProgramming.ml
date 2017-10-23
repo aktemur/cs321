@@ -92,6 +92,15 @@ let flatten lsts =
 let sums lst =
   List.rev (snd(List.fold_left (fun a x -> (fst a + x, (fst a + x)::snd a)) (0, []) lst))
 
+
+let rec rle lst =
+  match lst with
+  | [] -> []
+  | x::xs -> (match rle xs with
+              | [] -> [(x, 1)]
+              | (y,n)::ys -> if x = y then (y, n+1)::ys
+                             else (x, 1)::(y, n)::ys)
+
 (* DATA TYPES *)
 
 type suit = Club | Spade | Diamond | Heart
@@ -163,3 +172,8 @@ let rec reverse clst =
     | Empty -> acc
     | Cons(x,rest) -> helper rest (Cons(x,acc))
   in helper clst Empty
+
+let rec append clst1 clst2 =
+  match clst1 with
+  | Empty -> clst2
+  | Cons(i, tail) -> Cons(i, append tail clst2)            
