@@ -4,16 +4,13 @@ type exp = CstI of int
          | Mult of exp * exp
          | Subt of exp * exp
          | Div of exp * exp
+         | LetIn of string * exp * exp
 
 let rec lookup x env =
   match env with
   | [] -> failwith ("Unbound name " ^ x)
   | (y,i)::rest -> if x = y then i
                    else lookup x rest
-
-let env1 = [("a", 5); ("b", 8); ("zzz", 13)]
-
-let env2 = ("b", 99)::env1
 
 (* eval: exp -> (string * int) list -> int *)
 let rec eval e env =
@@ -24,6 +21,9 @@ let rec eval e env =
   | Mult(e1, e2) -> eval e1 env * eval e2 env
   | Subt(e1, e2) -> eval e1 env - eval e2 env
   | Div(e1, e2)  -> eval e1 env / eval e2 env
+  | LetIn(x, e1, e2) -> let v = eval e1 env
+                        in let env' = (x, v)::env
+                           in eval e2 env'
   
 (* 30 + 6 * 2 *)
 let e1 = Add(CstI(30),
@@ -45,4 +45,51 @@ let e4 = Subt(Subt(CstI(5), CstI(2)),
 let e4 = Subt(Subt(Var("a"),
                    CstI(2)),
               Var("b"))
+
+(* let a = 5 in a + 4 *)
+let e5 = LetIn("a", CstI 5, Add(Var "a", CstI 4))
+
+(* let x = 7
+   in let s = x * x
+      in let q = s * s
+         in q * q
+*)
+let e6 = LetIn("x", CstI 7,
+               LetIn("s", Mult(Var "x", Var "x"),
+                     LetIn("q", Mult(Var "s", Var "s"),
+                           Mult(Var "q", Var "q"))))
+(* let a = 3
+   in let b = 3
+      in let c = 5
+         in 7 * a - 9 / b + c
+*)
+let e7 = LetIn("a", CstI 3,
+               LetIn("b", CstI 3,
+                     LetIn("c", CstI 5,
+                           Add(Subt(Mult(CstI 7, Var "a"),
+                                    Div(CstI 9, Var "b")),
+                               Var "c"))))
+;;
+
+(* (let c = 3 in c + c) + (let c = 5 in c * c) *)
+let e8 = Add(LetIn("c", CstI 3, Add(Var "c", Var "c")),
+             LetIn("c", CstI 5, Mult(Var "c", Var "c")))
+;;
+
+(* let a = 5
+   in (let b = 3 in a + b) + (let b = 9 in a * b) *)
+let e9 = LetIn("a", CstI 5,
+               Add(LetIn("b", CstI 3, Add(Var "a", Var "b")),
+                   LetIn("b", CstI 9, Mult(Var "a", Var "b"))))
+(* let x =
+       let a = 5
+       in let b = 8
+          in a + b
+   in x * 2
+*)
+let e10 = LetIn("x", LetIn("a", CstI 5,
+                           LetIn("b", CstI 8,
+                                 Add(Var "a", Var "b"))),
+                Mult(Var "x", CstI 2))
+;;
               
