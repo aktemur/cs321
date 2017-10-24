@@ -1,0 +1,19 @@
+diff --git a/sampleProblems/interpretation/arith.ml b/sampleProblems/interpretation/arith.ml
+index 17db0c0..bbc4556 100644
+--- a/sampleProblems/interpretation/arith.ml
++++ b/sampleProblems/interpretation/arith.ml
+@@ -5,6 +5,7 @@ type exp = CstI of int
+          | Subt of exp * exp
+          | Div of exp * exp
+          | LetIn of string * exp * exp
++         | If of exp * exp * exp
+ 
+ (* lookup: string -> (string * int) list -> int *)
+ let rec lookup x env =
+@@ -25,3 +26,6 @@ let rec eval e env =
+   | LetIn(x, e1, e2) -> let v = eval e1 env
+                         in let env' = (x, v)::env
+                            in eval e2 env'
++  | If(e1, e2, e3) -> if (eval e1 env) = 0
++                      then eval e3 env
++                      else eval e2 env

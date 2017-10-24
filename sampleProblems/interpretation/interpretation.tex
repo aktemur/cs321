@@ -1,0 +1,157 @@
+\documentclass[addpoints]{exam}
+
+%\printanswers
+\noprintanswers
+
+\usepackage{amsmath,bigstrut,minted,url,graphicx}
+
+\pagestyle{headandfoot}
+\runningheadrule
+\firstpageheader{}{}{Page \thepage\ of \numpages}
+\runningheader{CS 321}{Sample Problems}{Page \thepage\ of \numpages}
+\firstpagefooter{}{}{}
+\runningfooter{}{}{}
+              
+\begin{document}
+
+\begin{center}
+{\Large \textbf{
+    Ozyegin University\\
+    CS 321 Programming Languages\\
+    Sample Problems on Interpretation
+}}
+\end{center}
+
+\begin{questions}
+  \question
+  (From PLC, Exercise 1.1)
+  Given the definition of the simple ArithLang below,
+  extend this language with conditional expressions (i.e. ``if'')
+  corresponding to Java's expression \texttt{$e_1$ ? $e_2$ : $e_3$},
+  or OCaml's \texttt{if $e_1$ then $e_2$ else $e_3$}.
+  Evaluation of a conditional expression should evaluate $e_1$ first.
+  If it yields a non-zero value, evaluate $e_2$, otherwise evaluate $e_3$.
+  
+  \inputminted{ocaml}{arith.ml}
+
+  \begin{solutionbox}{9cm}
+    Here is the diff:
+    \inputminted{diff}{arith_if_diff.txt}
+  \end{solutionbox}
+
+
+  \newpage
+  \question
+  (From PLC, Exercise 1.1)
+  Extend ArithLang to handle three additional operators:
+  ``max'', ``min'', and ``=''.
+  Like the existing binary operators,
+  they take two argument expressions.
+  The equals operator should return 1 when true and 0 when false.
+
+  \begin{solutionbox}{14cm}
+    Here is the diff:
+    \inputminted{diff}{arith_minmaxeq_diff.txt}
+  \end{solutionbox}
+
+  
+  \question
+  Write the representation of the following ArithLang expressions
+  using the \texttt{exp} data type.
+  \begin{parts}
+    \part \mintinline{ocaml}{v * 5 - k + 6}
+    \begin{solutionbox}{1cm}
+      \mintinline{ocaml}{Add(Subt(Mult(Var "v", CstI 5), Var "k"), CstI 6)}
+    \end{solutionbox}
+    
+    \part \mintinline{ocaml}{x + y + z + p}
+    \begin{solutionbox}{1cm}
+      \mintinline{ocaml}{Add(Add(Add(Var "x", Var "y"), Var "z"), Var "p")}
+    \end{solutionbox}
+    
+    \part \mintinline{ocaml}{5 - (y - 3) * (g + 1)}
+    \begin{solutionbox}{1cm}
+      \mintinline{ocaml}{Subt(CstI 5, Mult(Subt(Var "y", CstI 3), Add(Var "g", CstI 1)))}
+    \end{solutionbox}  
+
+    \part
+    \begin{minted}{ocaml}
+    let x =
+      let a = 5
+      in let b = 8
+         in a + b
+    in x * (let y = x + 2 in y)
+    \end{minted}
+    \begin{solutionbox}{4cm}
+      \begin{minted}{ocaml}
+        LetIn("x",
+              LetIn("a", CstI 5,
+                    LetIn("b", CstI 8,
+                          Add(Var "a", Var "b"))),
+              Mult(Var "x",
+                   LetIn("y", Add(Var "x", CstI 2),
+                         Var "y"))) 
+      \end{minted}
+    \end{solutionbox}  
+\end{parts}
+
+
+  \question
+  Write an OCaml function named \texttt{simplify}
+  that takes an \texttt{exp} and returns its simplified form
+  based on the rules below:
+
+  {
+    \begin{center}
+    \begin{tabular}{c}\hline
+      $0+e \to e$\\
+      $e+0 \to e$\\
+      $e-0 \to e$\\
+      $1\times e \to e$\\
+      $e\times 1 \to e$\\
+      $0\times e \to 0$\\
+      $e\times 0 \to 0$\\
+      $e-e \to 0$\\\hline
+    \end{tabular}
+    \end{center}
+  }
+
+  Remark: This problem is harder than it seems, because
+  simplification of expressions may enable other simplifications,
+  and I want to you to handle those cases, too.   
+  See the test cases.
+
+  \begin{minted}{ocaml}
+    # simplify (Mult(CstI 1,
+                     Mult(Add(Add(CstI 1,
+                                  Subt(Var "x", Var "x")),
+                              Add(CstI 4, CstI 6)),
+                          CstI 1)));;
+    - : exp = Add(CstI 1, Add(CstI 4, CstI 6))
+    
+    # simplify (Subt(CstI 0, Mult(Add(Var "x", CstI 0), CstI 0)));;
+    - : exp = CstI 0
+    
+    # simplify (LetIn("a", CstI 4,
+                      Subt(CstI 0,
+                           Mult(Add(Var "x", CstI 0),
+                                CstI 0))));;
+    - : exp = LetIn("a", CstI 4, CstI 0)
+
+    # simplify (Subt(Add(CstI 7, CstI 0),
+                     Mult(Add(Var "x", CstI 0), CstI 0)));;
+    - : exp = CstI 7
+
+    # simplify (Div(Subt(CstI 0,
+                         Mult(Add(Var "x", CstI 0), CstI 0)),
+                    CstI 7));;
+    - : exp = Div(CstI 0, CstI 7)
+  \end{minted}
+
+  \begin{solutionbox}{11cm}
+    \inputminted{ocaml}{simplify.ml}
+  \end{solutionbox}
+  
+\end{questions}
+
+\end{document}
