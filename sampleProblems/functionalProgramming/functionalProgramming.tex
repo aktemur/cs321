@@ -1,7 +1,7 @@
 \documentclass[addpoints]{exam}
 
-\printanswers
-%\noprintanswers
+%\printanswers
+\noprintanswers
 
 \usepackage{amsmath,bigstrut,minted,url,graphicx}
 
@@ -429,13 +429,25 @@ let positivesOfWithFoldLeft lst =
   that is exactly the same as \texttt{enumerate},
   but this time use \texttt{fold\_left}.
 
-  \begin{solutionbox}{3.5cm}
+  \begin{solutionbox}{8.5cm}
     \begin{minted}{ocaml}
+(* Here, the accumulator is the enumerated list plus the count
+   of elements seen so far. *)      
 let enumerateWithFoldLeft lst =
-  let f acc x =
+  let foldFun acc x =
     let (lst, index) = acc
     in (lst@[x,index], index+1)
-  in fst(List.fold_left f ([], 0) lst)         
+  in fst(List.fold_left foldFun ([], 0) lst)
+
+(* Alternatively, just use the enumerated list as the accumulator.
+  For each element, access the most recent enumerated element, and use
+  its index to calculate the next one. *)
+let enumerateWithFoldLeft lst =
+  let foldFun acc x =
+    match acc with
+    | [] -> [(x,0)]
+    | (y, i)::rest -> (x, i+1)::acc
+  in List.rev(List.fold_left foldFun [] lst);;
     \end{minted}
   \end{solutionbox}
 
