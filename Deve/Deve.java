@@ -76,6 +76,29 @@ class Mult extends Exp {
     }
 }
 
+class Less extends Exp {
+    private Exp e1;
+    private Exp e2;
+
+    Less(Exp e1, Exp e2) { this.e1 = e1; this.e2 = e2; }
+
+    public int eval(Env<String, Integer> env) {
+        return e1.eval(env) < e2.eval(env) ? 1 : 0;
+    }
+}
+
+class GreaterOrEq extends Exp {
+    private Exp e1;
+    private Exp e2;
+
+    GreaterOrEq(Exp e1, Exp e2) { this.e1 = e1; this.e2 = e2; }
+
+    public int eval(Env<String, Integer> env) {
+        return e1.eval(env) >= e2.eval(env) ? 1 : 0;
+    }
+}
+
+
 class LetIn extends Exp {
     private String name;
     private Exp e1;
@@ -88,9 +111,24 @@ class LetIn extends Exp {
         return e2.eval(env2);
     }
 }
-    
 
-public class Arith {
+class If extends Exp {
+    private Exp e1;
+    private Exp e2;
+    private Exp e3;
+
+    If(Exp e1, Exp e2, Exp e3) { this.e1 = e1; this.e2 = e2; this.e3 = e3; }
+
+    public int eval(Env env) {
+        if (e1.eval(env) == 0) {
+            return e3.eval(env);
+        } else {
+            return e2.eval(env);
+        }
+    }
+}
+
+public class Deve {
     public static void main(String[] args) {
         /* let x =
              let a = 5
@@ -106,5 +144,18 @@ public class Arith {
 
         Env<String, Integer> empty = new Empty();
         System.out.println(e10.eval(empty)); // EXPECTED: 26
+
+        Exp e11 = new LetIn("x", new CstI(4),
+                            new If(new GreaterOrEq(new Add(new Var("x"),
+                                                           new CstI(1)),
+                                                   new CstI(0)),
+                                   new CstI(42),
+                                   new Mult(new Var("x"), new CstI(8))));
+        Exp e12 = new LetIn("x", new CstI(4),
+                            new If(new Less(new Var("x"), new CstI(4)),
+                                   new CstI(42),
+                                   new Add(new Var("x"), new CstI(8))));
+        System.out.println(e11.eval(empty)); // EXPECTED: 42
+        System.out.println(e12.eval(empty)); // EXPECTED: 12
     }
 }
