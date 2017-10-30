@@ -1,4 +1,5 @@
 type exp = CstI of int
+         | CstB of bool
          | Var of string
          | Add of exp * exp
          | Mult of exp * exp
@@ -19,6 +20,7 @@ let rec lookup x env =
 let rec eval e env =
   match e with
   | CstI i -> i
+  | CstB b -> if b then 1 else 0
   | Var x -> lookup x env
   | Add(e1, e2)  -> eval e1 env + eval e2 env
   | Mult(e1, e2) -> eval e1 env * eval e2 env
@@ -118,3 +120,17 @@ let e12 = LetIn("x", CstI 4,
                    CstI 42,
                    Add(Var "x", CstI 8)))
 ;; (* EXPECTED: 12 *)
+
+(* if true then 42 else 8
+ *)
+let e13 = If(CstB true, 
+             CstI 42,
+             CstI 8)
+;; (* EXPECTED: 42 *)
+
+(* if false then 42 else 8
+ *)
+let e14 = If(CstB false, 
+             CstI 42,
+             CstI 8)
+;; (* EXPECTED: 8 *)

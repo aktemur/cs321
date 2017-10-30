@@ -6,7 +6,8 @@
 
 This is a simple programming language
 where we have arithmetic expressions (add, multiply, subtract, divide),
-names, bindings, and conditinals.
+names, bindings, conditionals, relational operators,
+and boolean literals
 
 To run:
 
