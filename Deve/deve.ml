@@ -5,6 +5,7 @@ type exp = CstI of int
          | Subt of exp * exp
          | Div of exp * exp
          | LetIn of string * exp * exp
+         | If of exp * exp * exp
 
 let rec lookup x env =
   match env with
@@ -24,6 +25,9 @@ let rec eval e env =
   | LetIn(x, e1, e2) -> let v = eval e1 env
                         in let env' = (x, v)::env
                            in eval e2 env'
+  | If(e1, e2, e3) -> (match eval e1 env with
+                       | 0 -> eval e3 env
+                       | m -> eval e2 env)
   
 (* 30 + 6 * 2 *)
 let e1 = Add(CstI(30),
@@ -93,3 +97,20 @@ let e10 = LetIn("x", LetIn("a", CstI 5,
                 Mult(Var "x", CstI 2))
 ;;
               
+(* let x = 4
+   in if x + 1 then 42 else x * 8
+ *)
+let e11 = LetIn("x", CstI 4,
+                If(Add(Var "x", CstI 1),
+                   CstI 42,
+                   Mult(Var "x", CstI 8)))
+;;
+
+(* let x = 4
+   in if x - 4 then 42 else x + 8
+ *)
+let e12 = LetIn("x", CstI 4,
+                If(Subt(Var "x", CstI 4),
+                   CstI 42,
+                   Add(Var "x", CstI 8)))
+;;
