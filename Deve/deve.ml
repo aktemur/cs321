@@ -4,6 +4,8 @@ type exp = CstI of int
          | Mult of exp * exp
          | Subt of exp * exp
          | Div of exp * exp
+         | Less of exp * exp
+         | GreaterOrEq of exp * exp
          | LetIn of string * exp * exp
          | If of exp * exp * exp
 
@@ -22,6 +24,8 @@ let rec eval e env =
   | Mult(e1, e2) -> eval e1 env * eval e2 env
   | Subt(e1, e2) -> eval e1 env - eval e2 env
   | Div(e1, e2)  -> eval e1 env / eval e2 env
+  | Less(e1, e2) -> if (eval e1 env) < (eval e2 env) then 1 else 0
+  | GreaterOrEq(e1, e2) -> if (eval e1 env) >= (eval e2 env) then 1 else 0
   | LetIn(x, e1, e2) -> let v = eval e1 env
                         in let env' = (x, v)::env
                            in eval e2 env'
@@ -98,19 +102,19 @@ let e10 = LetIn("x", LetIn("a", CstI 5,
 ;;
               
 (* let x = 4
-   in if x + 1 then 42 else x * 8
+   in if x + 1 >= 0 then 42 else x * 8
  *)
 let e11 = LetIn("x", CstI 4,
-                If(Add(Var "x", CstI 1),
+                If(GreaterOrEq(Add(Var "x", CstI 1), CstI 0),
                    CstI 42,
                    Mult(Var "x", CstI 8)))
-;;
+;; (* EXPECTED: 42 *)
 
 (* let x = 4
-   in if x - 4 then 42 else x + 8
+   in if x < 4 then 42 else x + 8
  *)
 let e12 = LetIn("x", CstI 4,
-                If(Subt(Var "x", CstI 4),
+                If(Less(Var "x", CstI 4),
                    CstI 42,
                    Add(Var "x", CstI 8)))
-;;
+;; (* EXPECTED: 12 *)
