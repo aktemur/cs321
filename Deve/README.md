@@ -33,4 +33,7 @@ Sample run:
 ...
 # allTokens "++*-/";;
 - : token list = [PLUS; PLUS; STAR; MINUS; SLASH; EOF]
+# allTokens "++ *   -/";;
+- : token list = [PLUS; PLUS; STAR; MINUS; SLASH; EOF]
+
 ```

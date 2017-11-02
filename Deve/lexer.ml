@@ -18,6 +18,9 @@ let rec tokenize chars =
   | '*'::rest -> STAR::(tokenize rest)
   | '-'::rest -> MINUS::(tokenize rest)
   | '/'::rest -> SLASH::(tokenize rest)
+  | ' '::rest -> tokenize rest
+  | '\t'::rest -> tokenize rest
+  | '\n'::rest -> tokenize rest
 ;;
 
 let chars_of_string s =
