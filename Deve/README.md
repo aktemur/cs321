@@ -35,5 +35,6 @@ Sample run:
 - : token list = [PLUS; PLUS; STAR; MINUS; SLASH; EOF]
 # allTokens "++ *   -/";;
 - : token list = [PLUS; PLUS; STAR; MINUS; SLASH; EOF]
-
+# allTokens "321 +4567 9";;
+- : token list = [INT 321; PLUS; INT 4567; INT 9; EOF]
 ```

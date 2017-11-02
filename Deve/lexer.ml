@@ -10,6 +10,10 @@ type token = INT of int
            | EOF
 ;;
 
+let isDigit c = '0' <= c && c <= '9'
+
+let digitToInt c = int_of_char c - int_of_char '0'
+
 (*  tokenize: char list -> token list  *)
 let rec tokenize chars =
   match chars with
@@ -21,6 +25,14 @@ let rec tokenize chars =
   | ' '::rest -> tokenize rest
   | '\t'::rest -> tokenize rest
   | '\n'::rest -> tokenize rest
+  | c::rest when isDigit(c) ->
+     tokenizeInt rest (digitToInt c)
+
+and tokenizeInt chars n =
+  match chars with
+  | c::rest when isDigit(c) ->
+     tokenizeInt rest (n * 10 + (digitToInt c))
+  | _ -> (INT n)::(tokenize chars)
 ;;
 
 let chars_of_string s =
