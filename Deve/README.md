@@ -43,4 +43,8 @@ Sample run:
 - : token list =
 [LET; NAME "x"; EQUALS; INT 5; IN; IF; NAME "x"; STAR; NAME "dummy"; THEN;
  INT 321; ELSE; EOF]
+# allTokens "x % abc Upper ??@ hey";;
+- : token list =
+[NAME "x"; ERROR '%'; NAME "abc"; ERROR 'U'; NAME "pper"; ERROR '?';
+ ERROR '?'; ERROR '@'; NAME "hey"; EOF]
 ```

@@ -10,6 +10,7 @@ type token = INT of int
            | PLUS | STAR | MINUS | SLASH
            | LET | EQUALS | IN
            | IF | THEN | ELSE
+           | ERROR of char
            | EOF
 ;;
 
@@ -50,6 +51,7 @@ let rec tokenize chars =
      tokenizeInt rest (digitToInt c)
   | c::rest when isLowercaseLetter(c) ->
      tokenizeName rest (charToString c)
+  | c::rest -> (ERROR c)::(tokenize rest)
 
 and tokenizeInt chars n =
   match chars with
