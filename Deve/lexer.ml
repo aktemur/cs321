@@ -8,6 +8,8 @@
 type token = INT of int
            | NAME of string
            | PLUS | STAR | MINUS | SLASH
+           | LET | EQUALS | IN
+           | IF | THEN | ELSE
            | EOF
 ;;
 
@@ -23,6 +25,15 @@ let isLetter c = isLowercaseLetter c || isUppercaseLetter c
 
 let charToString c = String.make 1 c                                 
                                                        
+let keyword s =
+  match s with
+  | "let" -> LET
+  | "in" -> IN
+  | "if" -> IF
+  | "then" -> THEN
+  | "else" -> ELSE
+  | _ -> NAME s
+  
 (*  tokenize: char list -> token list  *)
 let rec tokenize chars =
   match chars with
@@ -31,6 +42,7 @@ let rec tokenize chars =
   | '*'::rest -> STAR::(tokenize rest)
   | '-'::rest -> MINUS::(tokenize rest)
   | '/'::rest -> SLASH::(tokenize rest)
+  | '='::rest -> EQUALS::(tokenize rest)
   | ' '::rest -> tokenize rest
   | '\t'::rest -> tokenize rest
   | '\n'::rest -> tokenize rest
@@ -49,7 +61,7 @@ and tokenizeName chars s =
   match chars with
   | c::rest when isLetter(c) || isDigit(c) ->
      tokenizeName rest (s ^ (charToString c))
-  | _ -> (NAME s)::(tokenize chars)
+  | _ -> (keyword s)::(tokenize chars)
 ;;
 
 let chars_of_string s =
