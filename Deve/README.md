@@ -11,7 +11,7 @@ and boolean literals
 
 To run:
 
-```
+```ocaml
 # #use "deve.ml";;
 ...
 # eval e1 [];;
@@ -24,3 +24,13 @@ To run:
 - : int = -96
 ```
 
+### Lexer
+
+Sample run:
+
+```ocaml
+# #use "lexer.ml";;
+...
+# allTokens "++*-/";;
+- : token list = [PLUS; PLUS; STAR; MINUS; SLASH; EOF]
+```
