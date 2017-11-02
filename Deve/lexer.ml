@@ -6,6 +6,7 @@
    "a name", etc.
  *)
 type token = INT of int
+           | NAME of string
            | PLUS | STAR | MINUS | SLASH
            | EOF
 ;;
@@ -14,6 +15,14 @@ let isDigit c = '0' <= c && c <= '9'
 
 let digitToInt c = int_of_char c - int_of_char '0'
 
+let isLowercaseLetter c = 'a' <= c && c <= 'z'
+
+let isUppercaseLetter c = 'A' <= c && c <= 'Z'
+
+let isLetter c = isLowercaseLetter c || isUppercaseLetter c
+
+let charToString c = String.make 1 c                                 
+                                                       
 (*  tokenize: char list -> token list  *)
 let rec tokenize chars =
   match chars with
@@ -27,12 +36,20 @@ let rec tokenize chars =
   | '\n'::rest -> tokenize rest
   | c::rest when isDigit(c) ->
      tokenizeInt rest (digitToInt c)
+  | c::rest when isLowercaseLetter(c) ->
+     tokenizeName rest (charToString c)
 
 and tokenizeInt chars n =
   match chars with
   | c::rest when isDigit(c) ->
      tokenizeInt rest (n * 10 + (digitToInt c))
   | _ -> (INT n)::(tokenize chars)
+
+and tokenizeName chars s =
+  match chars with
+  | c::rest when isLetter(c) || isDigit(c) ->
+     tokenizeName rest (s ^ (charToString c))
+  | _ -> (NAME s)::(tokenize chars)
 ;;
 
 let chars_of_string s =
