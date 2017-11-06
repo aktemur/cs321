@@ -48,3 +48,21 @@ Sample run:
 [NAME "x"; ERROR '%'; NAME "abc"; ERROR 'U'; NAME "pper"; ERROR '?';
  ERROR '?'; ERROR '@'; NAME "hey"; EOF]
 ```
+
+### Parser
+
+Sample run:
+
+```ocaml
+# #use "deve.ml";;
+...
+# #use "lexer.ml";;
+...
+# #use "parser.ml";;
+...
+#  parse "5";;
+- : exp = CstI 5
+# parse "ozu";;
+- : exp = Var "ozu"
+```
+
