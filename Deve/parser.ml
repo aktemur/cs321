@@ -13,6 +13,16 @@ let rec parseExp tokens =
                            in (LetIn(x, e1, e2), rest2)
       | (e1, _) -> failwith "I was expecting to see an IN."
      )
+  | IF::rest ->
+     (match parseExp rest with
+      | (e1, THEN::rest1) ->
+         (match parseExp rest1 with
+          | (e2, ELSE::rest2) -> let (e3, rest3) = parseExp rest2
+                                 in (If(e1, e2, e3), rest3)
+          | (e2, _) -> failwith "I was expecting to see an ELSE."
+         )
+      | (e1, _) -> failwith "I was expecting to see a THEN."
+     )
 
 (* parseMain: token list -> exp *)
 let parseMain tokens =

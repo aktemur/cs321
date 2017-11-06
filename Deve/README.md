@@ -17,6 +17,7 @@ exp  ::= INT
        | BOOL
        | NAME
        | LET NAME EQUALS exp IN exp
+       | IF exp THEN exp ELSE exp
 ```
 
 ### Interpreter
@@ -87,5 +88,11 @@ LetIn ("x", LetIn ("y", Var "z", CstI 42), LetIn ("f", CstI 8, CstI 7))
 - : exp = CstB true
 # parse "false";;
 - : exp = CstB false
+# parse "if true then 4 else y";;
+- : exp = If (CstB true, CstI 4, Var "y")
+# parse "if true then if false then 8 else j else y";;
+- : exp = If (CstB true, If (CstB false, CstI 8, Var "j"), Var "y")
+# parse "let x = 9 in if x then 42 else 24";;
+- : exp = LetIn ("x", CstI 9, If (Var "x", CstI 42, CstI 24))
 ```
 
