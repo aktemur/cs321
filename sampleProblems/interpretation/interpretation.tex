@@ -3,7 +3,7 @@
 %\printanswers
 \noprintanswers
 
-\usepackage{amsmath,bigstrut,minted,url,graphicx}
+\usepackage{amsmath,bigstrut,minted,url,graphicx,tikz,tikz-qtree}
 
 \pagestyle{headandfoot}
 \runningheadrule
@@ -151,7 +151,160 @@
   \begin{solutionbox}{11cm}
     \inputminted{ocaml}{simplify.ml}
   \end{solutionbox}
+
+  \question
+  Is the grammar shown below ambiguous?
+  If yes, give me an input that at least two different
+  parse trees, and show those trees.
+  If no, prove it.
+
+  \begin{minted}{ocaml}
+    main ::= exp EOF
+    exp  ::= INT
+           | NAME
+           | exp PLUS exp
+           | exp STAR exp
+           | LET NAME EQ exp IN exp
+           | IF exp THEN exp ELSE exp
+  \end{minted}
+
+  \begin{solutionbox}{12cm}
+    It is ambiguous. Here is an input:
+    \mintinline{ocaml}{let x = 5 in x + 9}.
+
+    \Tree[.main
+      [.exp
+        LET
+        {NAME(``x'')}
+        EQ
+        [.exp {INT(5)} ]
+        IN
+        [.exp
+          [.exp {NAME(``x'')} ]
+          PLUS
+          [.exp {INT(9)} ]
+        ]
+      ]
+      EOF
+    ]
+    
+    And the second tree is
+        
+    \Tree[.main
+      [.exp
+        [.exp
+          LET
+          {NAME(``x'')}
+          EQ
+          [.exp {INT(5)} ]
+          IN
+          [.exp {NAME(``x'')} ]
+        ]
+        PLUS
+        [.exp {INT(9)} ]
+      ]
+      EOF
+    ]
+  \end{solutionbox}
+
+  \question
+  \begin{minted}{ocaml}
+    main ::= exp EOF
+    exp  ::= INT
+           | NAME
+           | exp SLASH exp
+           | exp PLUS exp
+           | LET NAME EQ exp IN exp
+           | IF exp THEN exp ELSE exp
+  \end{minted}
+  Based on the grammar given above,
+  show two different parse trees for the following inputs.
+  For each, also state whether the ambiguity is related to
+  \textbf{precedence} or \textbf{associativity}.
+  \begin{parts}
+    \part \mintinline{ocaml}{9 + 5 + 2}
+    \begin{solutionbox}{6.5cm}
+      This is related to associativity.
+      Does the ``+'' sign associate to the left or to the right? That's the problem.
+      If ``+'' associates to the right, we would get the tree on the left;
+      if ``+'' associates to the left, we would get the tree on the right.
+
+      {\small
+      \begin{tikzpicture}[sibling distance=0pt]
+        \Tree[.main
+        [.exp
+          [.exp INT\\(9) ]
+          PLUS
+          [.exp
+            [.exp {INT(5)} ]
+            PLUS
+            [.exp {INT(2)} ]
+          ]
+        ]
+        EOF
+      ]
+      \end{tikzpicture}
+      \begin{tikzpicture}
+      \Tree[.main
+        [.exp
+          [.exp
+            [.exp {INT(9)} ]
+            PLUS
+            [.exp {INT(5)} ]
+          ]
+          PLUS
+          [.exp {INT(2)} ]
+        ]
+        EOF
+      ]
+      \end{tikzpicture}
+      }
+    \end{solutionbox}
+    
+    \part \mintinline{ocaml}{9 + 5 / 2}
+    \begin{solutionbox}{7cm}
+      This is related to precedence.
+      Which operator has higher precedence, ``/'' or ``+''?
+      That is, who wins the fight over the ownership of ``5''?
+      That's the problem.
+      If ``/'' has higher precedence, we would get the tree on the left;
+      if ``+'' has higher precedence, we would get the tree on the right.
+
+      {\small
+      \begin{tikzpicture}[sibling distance=0pt]
+        \Tree[.main
+        [.exp
+          [.exp INT\\(9) ]
+          PLUS
+          [.exp
+            [.exp {INT(5)} ]
+            SLASH
+            [.exp {INT(2)} ]
+          ]
+        ]
+        EOF
+      ]
+      \end{tikzpicture}
+      \begin{tikzpicture}
+      \Tree[.main
+        [.exp
+          [.exp
+            [.exp {INT(9)} ]
+            PLUS
+            [.exp {INT(5)} ]
+          ]
+          SLASH
+          [.exp {INT(2)} ]
+        ]
+        EOF
+      ]
+      \end{tikzpicture}
+      }
+    \end{solutionbox}
+  \end{parts}
   
+
+
 \end{questions}
 
 \end{document}
