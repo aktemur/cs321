@@ -7,7 +7,17 @@
 This is a simple programming language
 where we have arithmetic expressions (add, multiply, subtract, divide),
 names, bindings, conditionals, relational operators,
-and boolean literals
+and boolean literals.
+
+Grammar:
+
+```
+main ::= exp EOF
+exp  ::= INT
+       | NAME
+```
+
+### Interpreter
 
 To run:
 
