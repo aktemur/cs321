@@ -15,6 +15,7 @@ Grammar:
 main ::= exp EOF
 exp  ::= INT
        | NAME
+       | LET NAME EQUALS exp IN exp
 ```
 
 ### Interpreter
@@ -74,5 +75,12 @@ Sample run:
 - : exp = CstI 5
 # parse "ozu";;
 - : exp = Var "ozu"
+# parse "let x = 4 in foo";;
+- : exp = LetIn ("x", CstI 4, Var "foo")
+# parse "let x = let y = z in 42 in foo";;
+- : exp = LetIn ("x", LetIn ("y", Var "z", CstI 42), Var "foo")
+# parse "let x = let y = z in 42 in let f = 8 in 7";;
+- : exp =
+LetIn ("x", LetIn ("y", Var "z", CstI 42), LetIn ("f", CstI 8, CstI 7))
 ```
 
