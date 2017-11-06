@@ -5,6 +5,7 @@
 let rec parseExp tokens =
   match tokens with
   | INT i :: rest -> (CstI i, rest)
+  | BOOL b :: rest -> (CstB b, rest)
   | NAME x :: rest -> (Var x, rest)
   | LET::(NAME x)::EQUALS::rest ->
      (match parseExp rest with

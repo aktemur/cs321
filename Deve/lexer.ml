@@ -6,6 +6,7 @@
    "a name", etc.
  *)
 type token = INT of int
+           | BOOL of bool
            | NAME of string
            | PLUS | STAR | MINUS | SLASH
            | LET | EQUALS | IN
@@ -33,6 +34,8 @@ let keyword s =
   | "if" -> IF
   | "then" -> THEN
   | "else" -> ELSE
+  | "true" -> BOOL true
+  | "false" -> BOOL false
   | _ -> NAME s
   
 (*  tokenize: char list -> token list  *)

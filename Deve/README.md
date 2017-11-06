@@ -14,6 +14,7 @@ Grammar:
 ```
 main ::= exp EOF
 exp  ::= INT
+       | BOOL
        | NAME
        | LET NAME EQUALS exp IN exp
 ```
@@ -82,5 +83,9 @@ Sample run:
 # parse "let x = let y = z in 42 in let f = 8 in 7";;
 - : exp =
 LetIn ("x", LetIn ("y", Var "z", CstI 42), LetIn ("f", CstI 8, CstI 7))
+# parse "true";;
+- : exp = CstB true
+# parse "false";;
+- : exp = CstB false
 ```
 
