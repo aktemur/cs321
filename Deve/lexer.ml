@@ -75,7 +75,7 @@ let chars_of_string s =
   in helper 0 []
 ;;
 
-let allTokens s =
+let scan s =
   tokenize (chars_of_string s)
 ;;
 
