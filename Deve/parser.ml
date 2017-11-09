@@ -113,6 +113,10 @@ and parseLevel4Exp tokens =
   | INT i :: rest -> (CstI i, rest)
   | NAME x :: rest -> (Var x, rest)
   | BOOL b :: rest -> (CstB b, rest)
+  | LPAR::rest ->
+     let (e, tokens1) = parseExp rest in
+     let rest1 = consume RPAR tokens1 in
+     (e, rest1)
   | t::rest -> failwith ("Unsupported token: " ^ toString(t))
 
 (* parseMain: token list -> exp *)

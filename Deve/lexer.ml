@@ -11,6 +11,7 @@ type token = INT of int
            | PLUS | STAR | MINUS | SLASH
            | LET | EQUALS | IN
            | IF | THEN | ELSE
+           | LPAR | RPAR
            | ERROR of char
            | EOF
 ;;
@@ -50,6 +51,8 @@ let rec tokenize chars =
   | ' '::rest -> tokenize rest
   | '\t'::rest -> tokenize rest
   | '\n'::rest -> tokenize rest
+  | '('::rest  -> LPAR::(tokenize rest)
+  | ')'::rest  -> RPAR::(tokenize rest)
   | c::rest when isDigit(c) ->
      tokenizeInt rest (digitToInt c)
   | c::rest when isLowercaseLetter(c) ->
