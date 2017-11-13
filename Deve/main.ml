@@ -8,6 +8,11 @@ let run code =
   eval (parse code) []
 ;;
 
+let rec valToString v =
+  match v with
+  | Int i -> string_of_int i
+  | Bool b -> string_of_bool b
+
 let deveREPL() =
   let rec readInput() =
     let s = String.trim(read_line()) in
@@ -20,6 +25,6 @@ let deveREPL() =
     print_string "D> ";
     let s = readInput() in
     let v = run s in
-    printf "val: %d\n" v;
+    printf "val: %s\n" (valToString v);
     loop()
   in loop()      
