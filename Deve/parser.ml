@@ -38,7 +38,7 @@ and parseLevel1Exp tokens =
   match tokens with
   | LET::rest -> parseLetIn tokens
   | IF::rest -> parseIfThenElse tokens
-  | _ -> parseLevel2Exp tokens
+  | _ -> parseLevel1_5Exp tokens
 
 and parseLetIn tokens =
   match tokens with
@@ -58,6 +58,31 @@ and parseIfThenElse tokens =
   let (e3, tokens5) = parseExp tokens4 in
   (If(e1, e2, e3), tokens5)
   
+and parseLevel1_5Exp tokens =
+  let rec helper tokens e1 =
+    match tokens with
+    | LESS::tok::rest ->
+       (match tok with
+        | LET -> let (e2, tokens2) = parseLetIn (tok::rest)
+                 in (Binary("<", e1, e2), tokens2)
+        | IF  -> let (e2, tokens2) = parseIfThenElse (tok::rest)
+                 in (Binary("<", e1, e2), tokens2)
+        | t   -> let (e2, tokens2) = parseLevel2Exp (tok::rest)
+                 in helper tokens2 (Binary("<", e1, e2))
+       )
+    | LESSEQ::tok::rest ->
+       (match tok with
+        | LET -> let (e2, tokens2) = parseLetIn (tok::rest)
+                 in (Binary("<=", e1, e2), tokens2)
+        | IF  -> let (e2, tokens2) = parseIfThenElse (tok::rest)
+                 in (Binary("<=", e1, e2), tokens2)
+        | t   -> let (e2, tokens2) = parseLevel2Exp (tok::rest)
+                 in helper tokens2 (Binary("<=", e1, e2))
+       )
+    | _ -> (e1, tokens)
+  in let (e1, tokens1) = parseLevel2Exp tokens in
+     helper tokens1 e1
+
 and parseLevel2Exp tokens =
   let rec helper tokens e1 =
     match tokens with

@@ -25,6 +25,8 @@ let rec eval e env =
       | "-" -> i1 - i2
       | "*" -> i1 * i2
       | "/" -> i1 / i2
+      | "<" -> if i1 < i2 then 1 else 0
+      | "<=" -> if i1 <= i2 then 1 else 0
      )
   | LetIn(x, e1, e2) -> let v = eval e1 env
                         in let env' = (x, v)::env
