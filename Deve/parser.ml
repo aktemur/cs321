@@ -64,20 +64,20 @@ and parseLevel2Exp tokens =
     | PLUS::tok::rest ->
        (match tok with
         | LET -> let (e2, tokens2) = parseLetIn (tok::rest)
-                 in (Add(e1, e2), tokens2)
+                 in (Binary("+", e1, e2), tokens2)
         | IF  -> let (e2, tokens2) = parseIfThenElse (tok::rest)
-                 in (Add(e1, e2), tokens2)
+                 in (Binary("+", e1, e2), tokens2)
         | t   -> let (e2, tokens2) = parseLevel3Exp (tok::rest)
-                 in helper tokens2 (Add(e1, e2))
+                 in helper tokens2 (Binary("+", e1, e2))
        )
     | MINUS::tok::rest ->
        (match tok with
         | LET -> let (e2, tokens2) = parseLetIn (tok::rest)
-                 in (Subt(e1, e2), tokens2)
+                 in (Binary("-", e1, e2), tokens2)
         | IF  -> let (e2, tokens2) = parseIfThenElse (tok::rest)
-                 in (Subt(e1, e2), tokens2)
+                 in (Binary("-", e1, e2), tokens2)
         | t   -> let (e2, tokens2) = parseLevel3Exp (tok::rest)
-                 in helper tokens2 (Subt(e1, e2))
+                 in helper tokens2 (Binary("-", e1, e2))
        )
     | _ -> (e1, tokens)
   in let (e1, tokens1) = parseLevel3Exp tokens in
@@ -89,20 +89,20 @@ and parseLevel3Exp tokens =
     | STAR::tok::rest ->
        (match tok with
         | LET -> let (e2, tokens2) = parseLetIn (tok::rest)
-                 in (Mult(e1, e2), tokens2)
+                 in (Binary("*", e1, e2), tokens2)
         | IF  -> let (e2, tokens2) = parseIfThenElse (tok::rest)
-                 in (Mult(e1, e2), tokens2)
+                 in (Binary("*", e1, e2), tokens2)
         | t   -> let (e2, tokens2) = parseLevel4Exp (tok::rest)
-                 in helper tokens2 (Mult(e1, e2))
+                 in helper tokens2 (Binary("*", e1, e2))
        )
     | SLASH::tok::rest ->
        (match tok with
         | LET -> let (e2, tokens2) = parseLetIn (tok::rest)
-                 in (Div(e1, e2), tokens2)
+                 in (Binary("/", e1, e2), tokens2)
         | IF  -> let (e2, tokens2) = parseIfThenElse (tok::rest)
-                 in (Div(e1, e2), tokens2)
+                 in (Binary("/", e1, e2), tokens2)
         | t   -> let (e2, tokens2) = parseLevel4Exp (tok::rest)
-                 in helper tokens2 (Div(e1, e2))
+                 in helper tokens2 (Binary("/", e1, e2))
        )
     | _ -> (e1, tokens)
   in let (e1, tokens1) = parseLevel4Exp tokens in

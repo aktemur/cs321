@@ -1,12 +1,7 @@
 type exp = CstI of int
          | CstB of bool
          | Var of string
-         | Add of exp * exp
-         | Mult of exp * exp
-         | Subt of exp * exp
-         | Div of exp * exp
-         | Less of exp * exp
-         | GreaterOrEq of exp * exp
+         | Binary of string * exp * exp
          | LetIn of string * exp * exp
          | If of exp * exp * exp
 
@@ -22,12 +17,15 @@ let rec eval e env =
   | CstI i -> i
   | CstB b -> if b then 1 else 0
   | Var x -> lookup x env
-  | Add(e1, e2)  -> eval e1 env + eval e2 env
-  | Mult(e1, e2) -> eval e1 env * eval e2 env
-  | Subt(e1, e2) -> eval e1 env - eval e2 env
-  | Div(e1, e2)  -> eval e1 env / eval e2 env
-  | Less(e1, e2) -> if (eval e1 env) < (eval e2 env) then 1 else 0
-  | GreaterOrEq(e1, e2) -> if (eval e1 env) >= (eval e2 env) then 1 else 0
+  | Binary(op, e1, e2)  ->
+     let i1 = eval e1 env in
+     let i2 = eval e2 env in
+     (match op with
+      | "+" -> i1 + i2
+      | "-" -> i1 - i2
+      | "*" -> i1 * i2
+      | "/" -> i1 / i2
+     )
   | LetIn(x, e1, e2) -> let v = eval e1 env
                         in let env' = (x, v)::env
                            in eval e2 env'
