@@ -303,8 +303,562 @@
     \end{solutionbox}
   \end{parts}
   
+  \question
+  The following is an ambiguous grammar. 
+  Non-terminals in the notation are written using
+  lowercase letters;
+  terminals are all in capital letters.
+  Give a term that has at least two different parse trees
+  in this grammar.
+  Show those two trees.
+  
+  \begin{verbatim}
+    expr ::= expr PLUS atom
+           | IF expr THEN expr ELSE expr
+           | BOOL
+
+    atom ::= NAME
+  \end{verbatim}
+
+  \begin{solutionbox}{8.5cm}
+    Consider ``if true then true else true + x''.
+
+    {\small
+      \begin{tikzpicture}[sibling distance=0pt]
+        \Tree[.expr
+          IF
+          [.expr BOOL ]
+          THEN
+          [.expr BOOL ]
+          ELSE
+          [.expr
+            [.expr BOOL ]
+            PLUS
+            [.atom NAME ]
+          ]
+        ]
+      \end{tikzpicture}
+
+      \hrule
+      
+      \begin{tikzpicture}
+        \Tree[.expr
+          [.expr
+            IF
+            [.expr BOOL ]
+            THEN
+            [.expr BOOL ]
+            ELSE
+            [.expr BOOL ]
+          ]
+          PLUS
+          [.atom NAME ]
+        ]
+      \end{tikzpicture}
+    }
+  \end{solutionbox}
+
+  
+  \question
+  Write a lexer that recognizes all character sequences
+  consisting of 
+  $a$ and $b$ where two $a$'s are always separated by at least one $b$.
+  For instance, these four strings are legal: $b$, $a$, $ba$, $ababbbaba$;
+  but these two strings are illegal: $aa$, $babaa$.
+  Your lexer should take a list of chars, and return
+  true if the input is legal, otherwise return false.
+
+  \begin{solutionbox}{3.5cm}
+    \begin{minted}{ocaml}
+      let rec lexer chars =
+        match chars with
+        | [] -> true
+        | 'a'::'a'::rest -> false
+        | _::rest -> lexer rest      
+    \end{minted}    
+  \end{solutionbox}
 
 
+  \question
+  Extend the Deve language interpreter to handle parenthesized expressions
+  such as \texttt{(3 + 4) * 5}.
+
+  \begin{solution}
+    We need to first modify the lexer to recognize parentheses.
+    For this, we will also add two more tokens:
+    
+    \begin{minted}{ocaml}
+      type token = INT of int
+                 | ...
+                 | LPAR | RPAR
+
+      let rec tokenize chars =
+        match chars with
+        | ...
+        | '('::rest -> LPAR::(tokenize rest)
+        | ')'::rest -> RPAR::(tokenize rest)
+        | ...
+    \end{minted}
+
+    Now we have to update the parser.
+    Because a parenthesized expression is
+    ``closed'' on both sides with tokens,
+    no ambiguity issues arise. For the same reason,
+    a parenthesized expression is just like an ``atomic''
+    expression; it should be located at the highest level of precedence.
+    So, we have:
+
+    \begin{minted}{ocaml}
+and parseLevel4Exp tokens =
+  match tokens with
+  | ...
+  | LPAR::rest ->
+     let (e, tokens1) = parseExp rest in
+     let rest2 = consume RPAR tokens1 in
+     (e, rest2)
+    \end{minted}
+
+    A parenthesized expression is just for grouping an expression;
+    we simply return the \texttt{exp} we parse between parentheses.
+    No new AST constructor is created.
+  \end{solution}
+  
+  \question
+  Instead of having a separate AST constructor for
+  each binary operator
+  (e.g. \texttt{Add}, \texttt{Subt}, etc.),
+  use a single constructor named \texttt{Binary}
+  to handle any binary operator.
+  For this, change the definition of the
+  \texttt{exp} data type.
+  In a \texttt{Binary},
+  in addition to the left and the right operands,
+  keep the operator as a string.
+  
+  E.g. \texttt{Add($e_1$, $e_2$)} becomes
+  \texttt{Binary("+", $e_1$, $e_2$)};\\
+  \texttt{Mult($e_1$, $e_2$)} becomes
+  \texttt{Binary("*", $e_1$, $e_2$)};\\
+  \texttt{Subt($e_1$, $e_2$)} becomes
+  \texttt{Binary("-", $e_1$, $e_2$)}.
+  
+  \begin{solution}%{35cm}
+    Here is the new definition for \texttt{exp}:
+    \begin{minted}{ocaml}
+      type exp = CstI of int
+         | CstB of bool
+         | Var of string
+         | Binary of string * exp * exp
+         | LetIn of string * exp * exp
+         | If of exp * exp * exp
+    \end{minted}
+
+    Update the \texttt{eval} function as follows:
+
+    \begin{minted}{ocaml}
+    let rec eval e env =
+      match e with
+      | ...
+      | Binary(op, e1, e2)  ->
+         let i1 = eval e1 env in
+         let i2 = eval e2 env in
+         (match op with
+          | "+" -> i1 + i2
+          | "-" -> i1 - i2
+          | "*" -> i1 * i2
+          | "/" -> i1 / i2
+          | ...
+         )
+    \end{minted}
+
+    You will also need to modify the parser
+    to return AST's according to this new definition:
+
+    {\small
+    \begin{minted}{ocaml}
+...
+and parseLevel2Exp tokens =
+  let rec helper tokens e1 =
+    match tokens with
+    | PLUS::tok::rest ->
+       (match tok with
+        | LET -> let (e2, tokens2) = parseLetIn (tok::rest)
+                 in (Binary("+", e1, e2), tokens2)        (* CHANGED *)
+        | IF  -> let (e2, tokens2) = parseIfThenElse (tok::rest)
+                 in (Binary("+", e1, e2), tokens2)        (* CHANGED *)
+        | t   -> let (e2, tokens2) = parseLevel3Exp (tok::rest)
+                 in helper tokens2 (Binary("+", e1, e2))  (* CHANGED *)
+       )
+    | MINUS::tok::rest ->
+       (match tok with
+        | LET -> let (e2, tokens2) = parseLetIn (tok::rest)
+                 in (Binary("-", e1, e2), tokens2)        (* CHANGED *)
+        | IF  -> let (e2, tokens2) = parseIfThenElse (tok::rest)
+                 in (Binary("-", e1, e2), tokens2)        (* CHANGED *)
+        | t   -> let (e2, tokens2) = parseLevel3Exp (tok::rest)
+                 in helper tokens2 (Binary("-", e1, e2))  (* CHANGED *)
+       )
+    | _ -> (e1, tokens)
+  in let (e1, tokens1) = parseLevel3Exp tokens in
+     helper tokens1 e1
+
+and parseLevel3Exp tokens =
+  let rec helper tokens e1 =
+    match tokens with
+    | STAR::tok::rest ->
+       (match tok with
+        | LET -> let (e2, tokens2) = parseLetIn (tok::rest)
+                 in (Binary("*", e1, e2), tokens2)       (* CHANGED *)
+        | IF  -> let (e2, tokens2) = parseIfThenElse (tok::rest)
+                 in (Binary("*", e1, e2), tokens2)       (* CHANGED *)
+        | t   -> let (e2, tokens2) = parseLevel4Exp (tok::rest)
+                 in helper tokens2 (Binary("*", e1, e2)) (* CHANGED *)
+       )
+    | SLASH::tok::rest ->
+       (match tok with
+        | LET -> let (e2, tokens2) = parseLetIn (tok::rest)
+                 in (Binary("/", e1, e2), tokens2)       (* CHANGED *)
+        | IF  -> let (e2, tokens2) = parseIfThenElse (tok::rest)
+                 in (Binary("/", e1, e2), tokens2)       (* CHANGED *)
+        | t   -> let (e2, tokens2) = parseLevel4Exp (tok::rest)
+                 in helper tokens2 (Binary("/", e1, e2)) (* CHANGED *)
+       )
+    | _ -> (e1, tokens)
+  in let (e1, tokens1) = parseLevel4Exp tokens in
+     helper tokens1 e1
+...
+    \end{minted}
+    }
+  \end{solution}
+  
+  \question
+  Extend the Deve interpreter (i.e. lexer, parser, and the
+  eval function) to handle two relational operators:
+  less-than (\texttt{<}) and less-than-or-equals
+  (\texttt{<=}).
+
+  \begin{solution}
+    We need to first modify the lexer to recognize
+    these new operators. This requires adding
+    two new tokens as well.
+    
+    \begin{minted}{ocaml}
+      type token = INT of int
+                 | ...
+                 | LESS | LESSEQ
+
+     let rec tokenize chars =
+       match chars with
+       | ...
+       | '<'::'='::rest -> LESSEQ::(tokenize rest)
+       | '<'::rest -> LESS::(tokenize rest)
+       | ...
+    \end{minted}
+
+    Note that I defined the \mintinline{ocaml}{LESSEQ} case
+    \textbf{above} the \mintinline{ocaml}{LESS} case;
+    otherwise it would not match.
+    
+    Now we have to update the parser. Because the relational operators we're supposed to
+    handle are just another binary operator (much like +, -, *, /),
+    the ambiguity problems related to the existing binary operators apply to them as well.
+    So, we need a specification of precedence and associativity:
+
+    \begin{itemize}
+    \item Relational operators are left-associative.
+    \item Relational operators have lower precedence than addition and subtraction,
+      but higher precedence than let-in and if-then-else.
+    \end{itemize}
+
+    So, our new table is:
+
+    \begin{center}
+      \begin{tabular}{|l|c|c|c|}
+        \hline
+        Precedence & Rule & Operator & Associativity \\\hline\hline
+        1 (lowest)  & let-in, if-then-else &  & - \\\hline
+        1.5           & relational & \texttt{<,<=} & left\\\hline
+        2           & plus, minus & \texttt{+,-} & left\\\hline
+        3           & star, slash & \texttt{*,/} & left\\\hline
+        4 (highest) & atomic expressions &              & -\\\hline
+      \end{tabular}
+    \end{center}
+
+    Essentially, we have created a new ``level'' of expressions.
+    To avoid having to rename existing functions, let us call this level 1.5.
+    So we add a new function named \texttt{parseLevel1\_5Exp}.
+    To write this, simply copy\&paste \texttt{parseLevel2Exp},
+    and adapt as appropriate.
+    
+    {\small
+    \begin{minted}{ocaml}      
+and parseLevel1Exp tokens =
+  match tokens with
+  | LET::rest -> parseLetIn tokens
+  | IF::rest -> parseIfThenElse tokens
+  | _ -> parseLevel1_5Exp tokens         (* CHANGED *)
+...
+and parseLevel1_5Exp tokens =            (* NEW FUNCTION *)
+  let rec helper tokens e1 =
+    match tokens with
+    | LESS::tok::rest ->
+       (match tok with
+        | LET -> let (e2, tokens2) = parseLetIn (tok::rest)
+                 in (Binary("<", e1, e2), tokens2)
+        | IF  -> let (e2, tokens2) = parseIfThenElse (tok::rest)
+                 in (Binary("<", e1, e2), tokens2)
+        | t   -> let (e2, tokens2) = parseLevel2Exp (tok::rest)
+                 in helper tokens2 (Binary("<", e1, e2))
+       )
+    | LESSEQ::tok::rest ->
+       (match tok with
+        | LET -> let (e2, tokens2) = parseLetIn (tok::rest)
+                 in (Binary("<=", e1, e2), tokens2)
+        | IF  -> let (e2, tokens2) = parseIfThenElse (tok::rest)
+                 in (Binary("<=", e1, e2), tokens2)
+        | t   -> let (e2, tokens2) = parseLevel2Exp (tok::rest)
+                 in helper tokens2 (Binary("<=", e1, e2))
+       )
+    | _ -> (e1, tokens)
+  in let (e1, tokens1) = parseLevel2Exp tokens in
+     helper tokens1 e1
+    \end{minted}
+    }
+
+    Finally, we extend the implementation of the \texttt{eval}
+    function to handle these new operators as well.
+
+    {\small
+    \begin{minted}{ocaml}      
+let rec eval e env =
+  match e with
+  | ...
+  | Binary(op, e1, e2)  ->
+     let i1 = eval e1 env in
+     let i2 = eval e2 env in
+     (match op with
+      | ...
+      | "<" -> if i1 < i2 then 1 else 0      (* NEW CASE *)
+      | "<=" -> if i1 <= i2 then 1 else 0    (* NEW CASE *)
+     )
+    \end{minted}
+    }
+  \end{solution}
+
+  
+  \question
+  Change the definition of the interpreter so that boolean values are not handled
+  as 0 and 1, but handled separately as \texttt{true} and \texttt{false}.
+  You will need to define a new data type named, say, \texttt{value}, for this.
+  The \texttt{eval} function should now return a \texttt{value},
+  instead of an \texttt{int}.
+
+  \begin{solution}
+    \begin{minted}{ocaml}
+(* exp does not change *)
+
+type value = Int of int
+           | Bool of bool
+
+(* lookup is polymorphic, does not need to change *)
+
+(* eval: exp -> (string * value) list -> value *)
+let rec eval e env =
+  match e with
+  | CstI i -> Int i
+  | CstB b -> Bool b
+  | Var x -> lookup x env
+  | Binary(op, e1, e2)  ->
+     let v1 = eval e1 env in
+     let v2 = eval e2 env in
+     (match op, v1, v2 with
+      | "+", Int i1, Int i2 -> Int(i1 + i2)
+      | "-", Int i1, Int i2 -> Int(i1 - i2)
+      | "*", Int i1, Int i2 -> Int(i1 * i2)
+      | "/", Int i1, Int i2 -> Int(i1 / i2)
+      | "<", Int i1, Int i2 -> Bool(i1 < i2)
+      | "<=", Int i1, Int i2 -> Bool(i1 <= i2)
+     )
+  | LetIn(x, e1, e2) -> let v = eval e1 env
+                        in let env' = (x, v)::env
+                           in eval e2 env'
+  | If(e1, e2, e3) -> (match eval e1 env with
+                       | Bool true -> eval e2 env
+                       | Bool false -> eval e3 env
+                       | _ -> failwith "Condition should be a Bool.")
+    \end{minted}
+
+
+    Let's test:
+    \begin{minted}{ocaml}
+# run "3 < 4";;
+- : value = Bool true
+# run "if 7 <= 4 then 42 else 34 + 1";;
+- : value = Int 35
+    \end{minted}
+  \end{solution}
+  
+
+  \question
+  Extend the language with pairs: \texttt{($e_1$, $e_2$)}
+  and the \texttt{fst}, \texttt{snd}
+  functions: \texttt{fst($e$)}, \texttt{snd($e$)} 
+
+  E.g: \texttt{let p = (6+8, 9-5) in fst(p) + snd(p)}
+  should evaluate to \texttt{Int 18}.
+
+  You will need to extend the definition of \texttt{value} for this.
+
+  E.g: \texttt{let p = (6+8, 9-5) in (snd(p), fst(p))}
+  should evaluate to \texttt{Pair(Int 4, Int 14)}.
+
+  Another example:
+  \texttt{let p = (6+8, 9-5) in (snd(p), (fst(p) < 10, 5))}
+  evaluates to \texttt{Pair(Int 4, Pair(Bool false, Int 5))}
+
+  You can treat \texttt{fst} and \texttt{snd} as unary operators
+  (i.e. operators that take a single argument).
+  
+  \begin{solution}
+    First, the lexer.
+    We already recognize the parentheses. Good.
+    We do not recognize the comma, though.
+    Also recognize \texttt{fst} and \texttt{snd} as keywords:
+
+    \begin{minted}{ocaml}
+type token = INT of int
+           | ...
+           | COMMA | FST | SND
+
+let keyword s =
+  match s with
+  | ...
+  | "fst" -> FST
+  | "snd" -> SND
+  | _ -> NAME s
+  
+let rec tokenize chars =
+  match chars with
+  | ...
+  | ','::rest -> COMMA::(tokenize rest)
+  | ...
+    \end{minted}
+
+    That was simple.
+    Let's modify the parser.
+
+    \begin{minted}{ocaml}
+and parseLevel4Exp tokens =
+  match tokens with
+  | ...
+  | LPAR::rest ->
+     let (e1, tokens1) = parseExp rest in
+     (match tokens1 with
+      | RPAR::rest1 -> (e1, rest1)
+      | COMMA::rest1 ->
+         let (e2, tokens2) = parseExp rest1 in
+         let rest2 = consume RPAR tokens2 in
+         (Binary(",", e1, e2), rest2)
+     )
+  | FST::LPAR::rest ->
+     let (e, tokens1) = parseExp rest in
+     let rest1 = consume RPAR tokens1 in
+     (Unary("fst", e), rest1)     
+  | SND::LPAR::rest ->
+     let (e, tokens1) = parseExp rest in
+     let rest1 = consume RPAR tokens1 in
+     (Unary("snd", e), rest1)     
+  | ...
+    \end{minted}
+
+    Finally, the evaluator:
+
+    \begin{minted}{ocaml}
+type exp = CstI of int
+         | ...
+         | Unary of string * exp         (* NEWLY ADDED *)
+         | Binary of string * exp * exp
+         | ...
+
+type value = Int of int
+           | Bool of bool
+           | Pair of value * value       (* NEWLY ADDED *)
+
+let rec eval e env =
+  match e with
+  | ...
+  | Unary(op, e) ->                      (* NEW CASE *)
+     let v = eval e1 env in
+     (match op, v with
+      | "fst", Pair(v1, v2) -> v1
+      | "snd", Pair(v1, v2) -> v2
+     )
+  | Binary(op, e1, e2)  ->
+     let v1 = eval e1 env in
+     let v2 = eval e2 env in
+     (match op, v1, v2 with
+      | ...
+      | ",", _, _ -> Pair(v1, v2)         (* NEW CASE *)
+     )
+    \end{minted}
+
+    
+    Let's test:
+    \begin{minted}{ocaml}
+# run "let p = (6+8, 9-5) in fst(p) + snd(p)";;
+- : value = Int 18
+# run "let p = (6+8, 9-5) in (snd(p), fst(p))";;
+- : value = Pair (Int 4, Int 14)
+# run "let p = (6+8, 9-5) in (snd(p), (fst(p) < 10, 5))";;
+- : value = Pair (Int 4, Pair (Bool false, Int 5))
+    \end{minted}
+  \end{solution}
+
+  
+  \question
+  Extend the language to handle
+  a simple match expression for pairs in the following form:
+
+  \texttt{match $e_1$ with ($x$,$y$) -> $e_2$}
+
+  Here, $e_1$ and $e_2$ are arbitrary expressions,
+  $x$ and $y$ are arbitrary names.
+  $e_1$ is expected to evaluate to a pair.
+  $x$ and $y$ may be used
+  inside $e_2$; so the match expression should bind
+  $x$ and $y$ to the first and second item, respectively,
+  of the pair that we obtain from evaluating $e_1$.
+
+  E.g. \texttt{match (5+6, 2*3) with (f,s) -> f + s}
+  evaluates to \texttt{Int 17}.
+
+  
+  \question
+  Extend the language with
+  the boolean negation (i.e. logical-not) operator: \texttt{not($e$)}.
+  For simplicity of parsing, we require parentheses here.
+  So, there are no ambiguity risks.
+
+  
+  \question
+  Extend the language with
+  the greater-than-or-equal-to operator: \texttt{$e_1$ >= $e_2$}.
+
+  Do NOT change the definition of the \texttt{eval} function for this.
+  Instead, simply parse a \texttt{>=}
+  as a logical-NOT of a \texttt{<}.
+  E.g. \texttt{$e_1$ >= $e_2$} should be parsed
+  as if it were \texttt{not($e_1$ < $e_2$)}.
+  Note that our language already handles \texttt{<} and \texttt{not}.
+
+
+  \question
+  Extend the language with two more binary operators, \texttt{min} and \texttt{max},
+  with the following syntax: \texttt{min($e_1$, $e_2$)} and \texttt{max($e_1$, $e_2$)}.
+  You can still use the \texttt{Binary} constructor for
+  \texttt{min} and \texttt{max} although they are not infix operators.
+
+
+  
 \end{questions}
-
 \end{document}
