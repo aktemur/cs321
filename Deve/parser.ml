@@ -139,9 +139,22 @@ and parseLevel4Exp tokens =
   | NAME x :: rest -> (Var x, rest)
   | BOOL b :: rest -> (CstB b, rest)
   | LPAR::rest ->
+     let (e1, tokens1) = parseExp rest in
+     (match tokens1 with
+      | RPAR::rest1 -> (e1, rest1)
+      | COMMA::rest1 ->
+         let (e2, tokens2) = parseExp rest1 in
+         let rest2 = consume RPAR tokens2 in
+         (Binary(",", e1, e2), rest2)
+     )
+  | FST::LPAR::rest ->
      let (e, tokens1) = parseExp rest in
      let rest1 = consume RPAR tokens1 in
-     (e, rest1)
+     (Unary("fst", e), rest1)     
+  | SND::LPAR::rest ->
+     let (e, tokens1) = parseExp rest in
+     let rest1 = consume RPAR tokens1 in
+     (Unary("snd", e), rest1)     
   | t::rest -> failwith ("Unsupported token: " ^ toString(t))
 
 (* parseMain: token list -> exp *)

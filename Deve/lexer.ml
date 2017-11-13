@@ -13,6 +13,7 @@ type token = INT of int
            | LET | EQUALS | IN
            | IF | THEN | ELSE
            | LPAR | RPAR
+           | COMMA | FST | SND
            | ERROR of char
            | EOF
 ;;
@@ -38,6 +39,8 @@ let keyword s =
   | "else" -> ELSE
   | "true" -> BOOL true
   | "false" -> BOOL false
+  | "fst" -> FST
+  | "snd" -> SND
   | _ -> NAME s
   
 (*  tokenize: char list -> token list  *)
@@ -56,6 +59,7 @@ let rec tokenize chars =
   | '\n'::rest -> tokenize rest
   | '('::rest  -> LPAR::(tokenize rest)
   | ')'::rest  -> RPAR::(tokenize rest)
+  | ','::rest  -> COMMA::(tokenize rest)
   | c::rest when isDigit(c) ->
      tokenizeInt rest (digitToInt c)
   | c::rest when isLowercaseLetter(c) ->

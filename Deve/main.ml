@@ -12,6 +12,7 @@ let rec valToString v =
   match v with
   | Int i -> string_of_int i
   | Bool b -> string_of_bool b
+  | Pair(v1, v2) -> "(" ^ valToString(v1) ^ "," ^ valToString(v2) ^ ")"
 
 let deveREPL() =
   let rec readInput() =
