@@ -379,6 +379,23 @@
   \end{solutionbox}
 
 
+  \begin{framed}
+    The questions below are based on Deve 1.0, given at
+    \url{https://github.com/aktemur/cs321/tree/master/Deve-1.0}.
+    The code is also shown below:
+  \end{framed}
+
+  \textbf{EVALUATOR:}\\
+  \inputminted{ocaml}{../../Deve-1.0/deve.ml}
+
+  \textbf{LEXER:}\\
+  \inputminted{ocaml}{../../Deve-1.0/lexer.ml}
+
+  \textbf{PARSER:}\\
+  \inputminted{ocaml}{../../Deve-1.0/parser.ml}
+
+  
+  
   \question
   Extend the Deve language interpreter to handle parenthesized expressions
   such as \texttt{(3 + 4) * 5}.
@@ -442,7 +459,7 @@ and parseLevel4Exp tokens =
   \texttt{Subt($e_1$, $e_2$)} becomes
   \texttt{Binary("-", $e_1$, $e_2$)}.
   
-  \begin{solution}%{35cm}
+  \begin{solution}
     Here is the new definition for \texttt{exp}:
     \begin{minted}{ocaml}
       type exp = CstI of int
@@ -819,7 +836,7 @@ let rec eval e env =
   Extend the language to handle
   a simple match expression for pairs in the following form:
 
-  \texttt{match $e_1$ with ($x$,$y$) -> $e_2$}
+  \texttt{match $e_1$ with ($x$,$y$) -> $e_2$ end}
 
   Here, $e_1$ and $e_2$ are arbitrary expressions,
   $x$ and $y$ are arbitrary names.
@@ -829,8 +846,87 @@ let rec eval e env =
   $x$ and $y$ to the first and second item, respectively,
   of the pair that we obtain from evaluating $e_1$.
 
-  E.g. \texttt{match (5+6, 2*3) with (f,s) -> f + s}
+  E.g. \texttt{match (5+6, 2*3) with (f,s) -> f + s end}
   evaluates to \texttt{Int 17}.
+
+  \begin{solution}
+    The lexer already recognizes the parentheses and comma.
+    We need to handle the tokens we do not have yet.
+
+    \begin{minted}{ocaml}
+type token = INT of int
+           | ...
+           | MATCH | WITH | ARROW | END
+
+let keyword s =
+  match s with
+  | ...
+  | "match" -> MATCH
+  | "with" -> WITH
+  | "end" -> END
+  | _ -> NAME s
+  
+let rec tokenize chars =
+  match chars with
+  | '-'::'>'::rest -> ARROW::(tokenize rest)
+  | ...
+  | '-'::rest -> MINUS::(tokenize rest)
+  | ...
+    \end{minted}
+
+    Note that you have to add the case for \mintinline{ocaml}{ARROW} above \mintinline{ocaml}{MINUS}.
+    Let's modify the parser. The match expression ends with the \mintinline{ocaml}{end} token.
+    That's good. We can handle this inside the \mintinline{ocaml}{parseLevel4Exp} function.
+    Before we do that, we need add a new AST constructor, though.
+    A match expression \texttt{match $e_1$ with ($x$,$y$) -> $e_2$ end}
+    has the following ``pieces'' aside from keywords/tokens: $e_1$, $x$, $y$, $e_2$.
+    Hence the following definition:
+
+    \begin{minted}{ocaml}
+type exp = CstI of int
+         | ...
+         | MatchPair of exp * string * string * exp   (* NEW CONSTRUCTOR *)
+    \end{minted}
+
+    Now, we can implement the parser:
+
+    \begin{minted}{ocaml}
+and parseLevel4Exp tokens =
+  match tokens with
+  | ...
+  | MATCH::rest ->
+     let (e1, tokens1) = parseExp rest in
+     (match tokens1 with
+      | WITH::LPAR::NAME(x)::COMMA::NAME(y)::RPAR::ARROW::rest1 ->
+         let (e2, tokens2) = parseExp rest1 in
+         let rest2 = consume END tokens2 in
+         (MatchPair(e1, x, y, e2), rest2)
+      | _ -> failwith "Badly formed match expression."
+     )
+  | ...
+    \end{minted}
+
+    Finally, the evaluator:
+
+    \begin{minted}{ocaml}
+let rec eval e env =
+  match e with
+  | ...
+  | MatchPair(e1, x, y, e2) ->
+     (match eval e1 env with
+      | Pair(v1, v2) -> eval e2 ((x,v1)::(y,v2)::env)
+      | _ -> failwith "Pair pattern matching works on pair values only (obviously)!"
+     )
+    \end{minted}
+
+    
+    Let's test:
+    \begin{minted}{ocaml}
+# run "match (5+6, 2*3) with (f,s) -> f + s end";; 
+- : value = Int 17
+    \end{minted}
+  \end{solution}
+
 
   
   \question
@@ -838,6 +934,63 @@ let rec eval e env =
   the boolean negation (i.e. logical-not) operator: \texttt{not($e$)}.
   For simplicity of parsing, we require parentheses here.
   So, there are no ambiguity risks.
+
+
+  \begin{solution}
+    The approach is the same as the previous questions.
+    Extend the lexer, extend the parser, extend the evaluator.
+
+    First, the lexer:
+    
+    \begin{minted}{ocaml}
+type token = INT of int
+           | ...
+           | NOT
+
+let keyword s =
+  match s with
+  | ...
+  | "not" -> NOT
+  | ...
+    \end{minted}
+
+    Next, the parser. We can represent the ``not'' operation
+    as a unary operator.
+
+    \begin{minted}{ocaml}
+and parseLevel4Exp tokens =
+  match tokens with
+  | ...
+  | NOT::LPAR::rest ->
+     let (e, tokens1) = parseExp rest in
+     let rest1 = consume RPAR tokens1 in
+     (Unary("not", e), rest1)
+  | ...
+    \end{minted}
+
+    Finally, the evaluator:
+
+    \begin{minted}{ocaml}
+let rec eval e env =
+  match e with
+  | ...
+  | Unary(op, e) ->
+     let v = eval e env in
+     (match op, v with
+      | "fst", Pair(v1, v2) -> v1
+      | "snd", Pair(v1, v2) -> v2
+      | "not", Bool b -> Bool (not b)    (* NEW CASE *)
+     )
+    \end{minted}
+    
+    Let's test:
+    \begin{minted}{ocaml}
+# run "not(true)";;
+- : value = Bool false
+# run "not(false)";;
+- : value = Bool true
+    \end{minted}
+  \end{solution}
 
   
   \question
@@ -851,13 +1004,47 @@ let rec eval e env =
   as if it were \texttt{not($e_1$ < $e_2$)}.
   Note that our language already handles \texttt{<} and \texttt{not}.
 
+  \begin{solution}
+    Lexer:
+    \begin{minted}{ocaml}
+type token = INT of int
+           | ...
+           | GREATEREQ      
 
-  \question
-  Extend the language with two more binary operators, \texttt{min} and \texttt{max},
-  with the following syntax: \texttt{min($e_1$, $e_2$)} and \texttt{max($e_1$, $e_2$)}.
-  You can still use the \texttt{Binary} constructor for
-  \texttt{min} and \texttt{max} although they are not infix operators.
+let rec tokenize chars =
+  match chars with
+  | ...
+  | '>'::'='::rest -> GREATEREQ::(tokenize rest)
+  | ...
+    \end{minted}    
 
+    Parser:
+    \begin{minted}{ocaml}
+and parseLevel1_5Exp tokens =
+  ...
+    | GREATEREQ::tok::rest ->
+       (match tok with
+        | LET -> let (e2, tokens2) = parseLetIn (tok::rest)
+                 in (Unary("not", Binary("<", e1, e2)), tokens2)
+        | IF  -> let (e2, tokens2) = parseIfThenElse (tok::rest)
+                 in (Unary("not", Binary("<", e1, e2)), tokens2)
+        | t   -> let (e2, tokens2) = parseLevel2Exp (tok::rest)
+                 in helper tokens2 (Unary("not", Binary("<", e1, e2)))
+       )      
+    \end{minted}    
+
+    Testing:
+    \begin{minted}{ocaml}
+# parse "3 >= 4";;
+- : exp = Unary ("not", Binary ("<", CstI 3, CstI 4))
+# run "3 >= 4";;  
+- : value = Bool false
+# run "4 >= 4";;
+- : value = Bool true
+# run "8 >= 4";;
+- : value = Bool true
+    \end{minted}
+  \end{solution}
 
   
 \end{questions}
