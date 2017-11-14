@@ -18,6 +18,7 @@ let toString tok =
   | EOF -> "EOF"
   | LESS -> "LESS"
   | LESSEQ -> "LESSEQ"
+  | GREATEREQ -> "GREATEREQ"
   | LPAR -> "LPAR"
   | RPAR -> "RPAR"
   | COMMA -> "COMMA"
@@ -90,6 +91,15 @@ and parseLevel1_5Exp tokens =
                  in (Binary("<=", e1, e2), tokens2)
         | t   -> let (e2, tokens2) = parseLevel2Exp (tok::rest)
                  in helper tokens2 (Binary("<=", e1, e2))
+       )
+    | GREATEREQ::tok::rest ->
+       (match tok with
+        | LET -> let (e2, tokens2) = parseLetIn (tok::rest)
+                 in (Unary("not", Binary("<", e1, e2)), tokens2)
+        | IF  -> let (e2, tokens2) = parseIfThenElse (tok::rest)
+                 in (Unary("not", Binary("<", e1, e2)), tokens2)
+        | t   -> let (e2, tokens2) = parseLevel2Exp (tok::rest)
+                 in helper tokens2 (Unary("not", Binary("<", e1, e2)))
        )
     | _ -> (e1, tokens)
   in let (e1, tokens1) = parseLevel2Exp tokens in

@@ -9,7 +9,7 @@ type token = INT of int
            | BOOL of bool
            | NAME of string
            | PLUS | STAR | MINUS | SLASH
-           | LESS | LESSEQ
+           | LESS | LESSEQ | GREATEREQ
            | LET | EQUALS | IN
            | IF | THEN | ELSE
            | LPAR | RPAR
@@ -61,6 +61,7 @@ let rec tokenize chars =
   | '='::rest -> EQUALS::(tokenize rest)
   | '<'::'='::rest -> LESSEQ::(tokenize rest)
   | '<'::rest -> LESS::(tokenize rest)
+  | '>'::'='::rest -> GREATEREQ::(tokenize rest)
   | ' '::rest -> tokenize rest
   | '\t'::rest -> tokenize rest
   | '\n'::rest -> tokenize rest
