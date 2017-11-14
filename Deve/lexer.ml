@@ -15,6 +15,7 @@ type token = INT of int
            | LPAR | RPAR
            | COMMA | FST | SND
            | MATCH | WITH | ARROW | END
+           | NOT
            | ERROR of char
            | EOF
 ;;
@@ -45,6 +46,7 @@ let keyword s =
   | "match" -> MATCH
   | "with" -> WITH
   | "end" -> END
+  | "not" -> NOT
   | _ -> NAME s
   
 (*  tokenize: char list -> token list  *)

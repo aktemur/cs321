@@ -28,6 +28,7 @@ let rec eval e env =
      (match op, v with
       | "fst", Pair(v1, v2) -> v1
       | "snd", Pair(v1, v2) -> v2
+      | "not", Bool b -> Bool (not b)
      )
   | Binary(op, e1, e2)  ->
      let v1 = eval e1 env in

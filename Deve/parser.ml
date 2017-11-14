@@ -26,6 +26,7 @@ let toString tok =
   | MATCH -> "MATCH"
   | WITH -> "WITH"
   | ARROW -> "ARROW"
+  | NOT -> "NOT"
   | END -> "END"
 
 (* consume: token -> token list -> token list
@@ -166,6 +167,10 @@ and parseLevel4Exp tokens =
      let (e, tokens1) = parseExp rest in
      let rest1 = consume RPAR tokens1 in
      (Unary("snd", e), rest1)     
+  | NOT::LPAR::rest ->
+     let (e, tokens1) = parseExp rest in
+     let rest1 = consume RPAR tokens1 in
+     (Unary("not", e), rest1)
   | MATCH::rest ->
      let (e1, tokens1) = parseExp rest in
      (match tokens1 with
