@@ -16,6 +16,17 @@ let toString tok =
   | ELSE -> "ELSE"
   | ERROR c -> "ERROR('" ^ (charToString c) ^ "')"
   | EOF -> "EOF"
+  | LESS -> "LESS"
+  | LESSEQ -> "LESSEQ"
+  | LPAR -> "LPAR"
+  | RPAR -> "RPAR"
+  | COMMA -> "COMMA"
+  | FST -> "FST"
+  | SND -> "SND"
+  | MATCH -> "MATCH"
+  | WITH -> "WITH"
+  | ARROW -> "ARROW"
+  | END -> "END"
 
 (* consume: token -> token list -> token list
    Enforces that the given token list's head is the given token;
@@ -155,6 +166,15 @@ and parseLevel4Exp tokens =
      let (e, tokens1) = parseExp rest in
      let rest1 = consume RPAR tokens1 in
      (Unary("snd", e), rest1)     
+  | MATCH::rest ->
+     let (e1, tokens1) = parseExp rest in
+     (match tokens1 with
+      | WITH::LPAR::NAME(x)::COMMA::NAME(y)::RPAR::ARROW::rest1 ->
+         let (e2, tokens2) = parseExp rest1 in
+         let rest2 = consume END tokens2 in
+         (MatchPair(e1, x, y, e2), rest2)
+      | _ -> failwith "Badly formed match expression."
+     )
   | t::rest -> failwith ("Unsupported token: " ^ toString(t))
 
 (* parseMain: token list -> exp *)

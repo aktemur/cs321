@@ -14,6 +14,7 @@ type token = INT of int
            | IF | THEN | ELSE
            | LPAR | RPAR
            | COMMA | FST | SND
+           | MATCH | WITH | ARROW | END
            | ERROR of char
            | EOF
 ;;
@@ -41,12 +42,16 @@ let keyword s =
   | "false" -> BOOL false
   | "fst" -> FST
   | "snd" -> SND
+  | "match" -> MATCH
+  | "with" -> WITH
+  | "end" -> END
   | _ -> NAME s
   
 (*  tokenize: char list -> token list  *)
 let rec tokenize chars =
   match chars with
   | [] -> [EOF]
+  | '-'::'>'::rest -> ARROW::(tokenize rest)
   | '+'::rest -> PLUS::(tokenize rest)
   | '*'::rest -> STAR::(tokenize rest)
   | '-'::rest -> MINUS::(tokenize rest)

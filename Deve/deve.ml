@@ -5,6 +5,7 @@ type exp = CstI of int
          | Binary of string * exp * exp
          | LetIn of string * exp * exp
          | If of exp * exp * exp
+         | MatchPair of exp * string * string * exp
 
 type value = Int of int
            | Bool of bool
@@ -47,5 +48,9 @@ let rec eval e env =
                        | Bool true -> eval e2 env
                        | Bool false -> eval e3 env
                        | _ -> failwith "Condition should be a Bool.")
-  
+  | MatchPair(e1, x, y, e2) ->
+     (match eval e1 env with
+      | Pair(v1, v2) -> eval e2 ((x,v1)::(y,v2)::env)
+      | _ -> failwith "Pair pattern matching works on pair values only (obviously)!"
+     )
 
