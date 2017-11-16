@@ -8,6 +8,26 @@ This is a simple programming language
 where we have arithmetic expressions (add, multiply, subtract, divide),
 names, bindings, conditionals, booleans, etc.
 
+Grammar:
+
+```
+main ::= exp EOF
+exp  ::= INT | BOOL | NAME
+       | exp PLUS exp
+       | exp STAR exp
+       | exp MINUS exp
+       | exp SLASH exp
+       | exp LESS exp
+       | exp LESSEQ exp
+       | exp GREATEREQ exp
+       | LPAR exp RPAR
+       | LPAR exp COMMA exp RPAR
+       | FST LPAR exp RPAR
+       | SND LPAR exp RPAR
+       | MATCH exp WITH LPAR NAME COMMA NAME RPAR ARROW exp END
+       | NOT LPAR exp RPAR
+```
+
 ### Interpreter
 
 To run:
