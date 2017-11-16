@@ -26,6 +26,8 @@ exp  ::= INT | BOOL | NAME
        | SND LPAR exp RPAR
        | MATCH exp WITH LPAR NAME COMMA NAME RPAR ARROW exp END
        | NOT LPAR exp RPAR
+       | IF exp THEN exp ELSE exp
+       | LET NAME EQUALS exp IN exp
 ```
 
 ### Interpreter
