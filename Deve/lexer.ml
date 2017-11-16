@@ -10,7 +10,7 @@ type token = INT of int
            | NAME of string
            | PLUS | STAR | MINUS | SLASH
            | LESS | LESSEQ | GREATEREQ
-           | LET | EQUALS | IN
+           | LET | REC | EQUALS | IN
            | IF | THEN | ELSE
            | LPAR | RPAR
            | COMMA | FST | SND
@@ -35,6 +35,7 @@ let charToString c = String.make 1 c
 let keyword s =
   match s with
   | "let" -> LET
+  | "rec" -> REC
   | "in" -> IN
   | "if" -> IF
   | "then" -> THEN

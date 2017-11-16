@@ -9,6 +9,7 @@ let toString tok =
   | MINUS -> "MINUS"
   | SLASH -> "SLASH"
   | LET -> "LET"
+  | REC -> "REC"
   | EQUALS -> "EQUALS"
   | IN -> "IN"
   | IF -> "IF"
@@ -60,7 +61,21 @@ and parseLetIn tokens =
      let tokens2 = consume IN tokens1 in
      let (e2, tokens3) = parseExp tokens2 in
      (LetIn(x, e1, e2), tokens3)
+  | LET::REC::NAME(f)::rest ->
+     let (params, tokens1) = parseParams rest in
+     let tokens2 = consume EQUALS tokens1 in
+     let (e1, tokens3) = parseExp tokens2 in
+     let tokens4 = consume IN tokens3 in
+     let (e2, tokens5) = parseExp tokens4 in
+     (LetRec(f, params, e1, e2), tokens5)
   | _ -> failwith "Should not be possible."
+
+and parseParams tokens =
+  match tokens with
+  | NAME(x)::rest ->
+     let (ps, tokens1) = parseParams rest in
+     (x::ps, tokens1)
+  | _ -> ([], tokens)
 
 and parseIfThenElse tokens =
   let rest = consume IF tokens in

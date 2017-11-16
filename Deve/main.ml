@@ -13,6 +13,7 @@ let rec valToString v =
   | Int i -> string_of_int i
   | Bool b -> string_of_bool b
   | Pair(v1, v2) -> "(" ^ valToString(v1) ^ "," ^ valToString(v2) ^ ")"
+  | Closure(f, ps, e1, env) -> "<fun>"
 
 let deveREPL() =
   let rec readInput() =

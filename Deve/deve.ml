@@ -1,3 +1,5 @@
+type parameters = string list
+
 type exp = CstI of int
          | CstB of bool
          | Var of string
@@ -6,10 +8,13 @@ type exp = CstI of int
          | LetIn of string * exp * exp
          | If of exp * exp * exp
          | MatchPair of exp * string * string * exp
+         | LetRec of string * parameters * exp * exp
 
 type value = Int of int
            | Bool of bool
            | Pair of value * value
+           | Closure of string * parameters * exp * ((string * value) list)
+                     (* fun. name, parameters, fun. body, environment *)
 
 let rec lookup x env =
   match env with
@@ -54,4 +59,7 @@ let rec eval e env =
       | Pair(v1, v2) -> eval e2 ((x,v1)::(y,v2)::env)
       | _ -> failwith "Pair pattern matching works on pair values only (obviously)!"
      )
+  | LetRec(f, ps, e1, e2) ->
+     let closure = Closure(f, ps, e1, env) in
+     eval e2 ((f, closure)::env)
 

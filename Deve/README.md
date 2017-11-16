@@ -28,6 +28,9 @@ exp  ::= INT | BOOL | NAME
        | NOT LPAR exp RPAR
        | IF exp THEN exp ELSE exp
        | LET NAME EQUALS exp IN exp
+       | LET REC NAME params EQUALS exp IN exp
+params ::= NAME
+       | NAME params
 ```
 
 ### Interpreter
@@ -52,4 +55,14 @@ To run:
 - : value = Pair (Int 3, Bool true)
 # run "((3, 7 + 9), 5 < 8)";;
 - : value = Pair (Pair (Int 3, Int 16), Bool true)
+# run "let rec f x = x + 2 in f";;
+- : value = Closure ("f", ["x"], Binary ("+", Var "x", CstI 2), [])
+# run "let rec f x y z = x + 2 in f";;
+- : value = Closure ("f", ["x"; "y"; "z"], Binary ("+", Var "x", CstI 2), [])
+# run "let x = 15
+       in let rec addX y = x + y
+          in let x = true
+             in addX";;
+- : value =
+Closure ("addX", ["y"], Binary ("+", Var "x", Var "y"), [("x", Int 15)])
 ```
