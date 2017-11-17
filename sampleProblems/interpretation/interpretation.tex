@@ -379,10 +379,12 @@
   \end{solutionbox}
 
 
+  \newpage
   \begin{framed}
+    {\color{red}
     The questions below are based on Deve 1.0, given at
     \url{https://github.com/aktemur/cs321/tree/master/Deve-1.0}.
-    The code is also shown below:
+    The code is also shown below:}
   \end{framed}
 
   \textbf{EVALUATOR:}\\
@@ -497,24 +499,12 @@ and parseLevel4Exp tokens =
 and parseLevel2Exp tokens =
   let rec helper tokens e1 =
     match tokens with
-    | PLUS::tok::rest ->
-       (match tok with
-        | LET -> let (e2, tokens2) = parseLetIn (tok::rest)
-                 in (Binary("+", e1, e2), tokens2)        (* CHANGED *)
-        | IF  -> let (e2, tokens2) = parseIfThenElse (tok::rest)
-                 in (Binary("+", e1, e2), tokens2)        (* CHANGED *)
-        | t   -> let (e2, tokens2) = parseLevel3Exp (tok::rest)
-                 in helper tokens2 (Binary("+", e1, e2))  (* CHANGED *)
-       )
-    | MINUS::tok::rest ->
-       (match tok with
-        | LET -> let (e2, tokens2) = parseLetIn (tok::rest)
-                 in (Binary("-", e1, e2), tokens2)        (* CHANGED *)
-        | IF  -> let (e2, tokens2) = parseIfThenElse (tok::rest)
-                 in (Binary("-", e1, e2), tokens2)        (* CHANGED *)
-        | t   -> let (e2, tokens2) = parseLevel3Exp (tok::rest)
-                 in helper tokens2 (Binary("-", e1, e2))  (* CHANGED *)
-       )
+    | PLUS::rest ->
+       let (e2, tokens2) = parseLETorIForOther parseLevel3Exp rest
+       in helper tokens2 (Binary("+", e1, e2)         (* CHANGED *)
+    | MINUS::rest ->
+       let (e2, tokens2) = parseLETorIForOther parseLevel3Exp rest
+       in helper tokens2 (Binary("-", e1, e2)         (* CHANGED *)
     | _ -> (e1, tokens)
   in let (e1, tokens1) = parseLevel3Exp tokens in
      helper tokens1 e1
@@ -522,27 +512,15 @@ and parseLevel2Exp tokens =
 and parseLevel3Exp tokens =
   let rec helper tokens e1 =
     match tokens with
-    | STAR::tok::rest ->
-       (match tok with
-        | LET -> let (e2, tokens2) = parseLetIn (tok::rest)
-                 in (Binary("*", e1, e2), tokens2)       (* CHANGED *)
-        | IF  -> let (e2, tokens2) = parseIfThenElse (tok::rest)
-                 in (Binary("*", e1, e2), tokens2)       (* CHANGED *)
-        | t   -> let (e2, tokens2) = parseLevel4Exp (tok::rest)
-                 in helper tokens2 (Binary("*", e1, e2)) (* CHANGED *)
-       )
-    | SLASH::tok::rest ->
-       (match tok with
-        | LET -> let (e2, tokens2) = parseLetIn (tok::rest)
-                 in (Binary("/", e1, e2), tokens2)       (* CHANGED *)
-        | IF  -> let (e2, tokens2) = parseIfThenElse (tok::rest)
-                 in (Binary("/", e1, e2), tokens2)       (* CHANGED *)
-        | t   -> let (e2, tokens2) = parseLevel4Exp (tok::rest)
-                 in helper tokens2 (Binary("/", e1, e2)) (* CHANGED *)
-       )
+    | STAR::rest ->
+       let (e2, tokens2) = parseLETorIForOther parseLevel4Exp rest
+       in helper tokens2 (Binary("*", e1, e2)         (* CHANGED *)
+    | SLASH::rest ->
+       let (e2, tokens2) = parseLETorIForOther parseLevel4Exp rest
+       in helper tokens2 (Binary("/", e1, e2)         (* CHANGED *)
     | _ -> (e1, tokens)
   in let (e1, tokens1) = parseLevel4Exp tokens in
-     helper tokens1 e1
+  helper tokens1 e1
 ...
     \end{minted}
     }
@@ -618,27 +596,14 @@ and parseLevel1Exp tokens =
 and parseLevel1_5Exp tokens =            (* NEW FUNCTION *)
   let rec helper tokens e1 =
     match tokens with
-    | LESS::tok::rest ->
-       (match tok with
-        | LET -> let (e2, tokens2) = parseLetIn (tok::rest)
-                 in (Binary("<", e1, e2), tokens2)
-        | IF  -> let (e2, tokens2) = parseIfThenElse (tok::rest)
-                 in (Binary("<", e1, e2), tokens2)
-        | t   -> let (e2, tokens2) = parseLevel2Exp (tok::rest)
-                 in helper tokens2 (Binary("<", e1, e2))
-       )
-    | LESSEQ::tok::rest ->
-       (match tok with
-        | LET -> let (e2, tokens2) = parseLetIn (tok::rest)
-                 in (Binary("<=", e1, e2), tokens2)
-        | IF  -> let (e2, tokens2) = parseIfThenElse (tok::rest)
-                 in (Binary("<=", e1, e2), tokens2)
-        | t   -> let (e2, tokens2) = parseLevel2Exp (tok::rest)
-                 in helper tokens2 (Binary("<=", e1, e2))
-       )
-    | _ -> (e1, tokens)
+    | LESS::rest ->
+       let (e2, tokens2) = parseLETorIForOther parseLevel2Exp rest
+       in helper tokens2 (Binary("<", e1, e2))
+    | LESSEQ::rest ->
+       let (e2, tokens2) = parseLETorIForOther parseLevel2Exp rest
+       in helper tokens2 (Binary("<=", e1, e2))
   in let (e1, tokens1) = parseLevel2Exp tokens in
-     helper tokens1 e1
+  helper tokens1 e1
     \end{minted}
     }
 
@@ -836,7 +801,7 @@ let rec eval e env =
   Extend the language to handle
   a simple match expression for pairs in the following form:
 
-  \texttt{match $e_1$ with ($x$,$y$) -> $e_2$ end}
+  \texttt{match $e_1$ with ($x$,$y$) -> $e_2$}
 
   Here, $e_1$ and $e_2$ are arbitrary expressions,
   $x$ and $y$ are arbitrary names.
@@ -846,9 +811,12 @@ let rec eval e env =
   $x$ and $y$ to the first and second item, respectively,
   of the pair that we obtain from evaluating $e_1$.
 
-  E.g. \texttt{match (5+6, 2*3) with (f,s) -> f + s end}
+  E.g. \texttt{match (5+6, 2*3) with (f,s) -> f + s}
   evaluates to \texttt{Int 17}.
 
+  Match expression is at the same level of precedence with let-in
+  and if-then-else.
+  
   \begin{solution}
     The lexer already recognizes the parentheses and comma.
     We need to handle the tokens we do not have yet.
@@ -856,14 +824,13 @@ let rec eval e env =
     \begin{minted}{ocaml}
 type token = INT of int
            | ...
-           | MATCH | WITH | ARROW | END
+           | MATCH | WITH | ARROW
 
 let keyword s =
   match s with
   | ...
   | "match" -> MATCH
   | "with" -> WITH
-  | "end" -> END
   | _ -> NAME s
   
 let rec tokenize chars =
@@ -875,8 +842,12 @@ let rec tokenize chars =
     \end{minted}
 
     Note that you have to add the case for \mintinline{ocaml}{ARROW} above \mintinline{ocaml}{MINUS}.
-    Let's modify the parser. The match expression ends with the \mintinline{ocaml}{end} token.
-    That's good. We can handle this inside the \mintinline{ocaml}{parseLevel4Exp} function.
+    Let's modify the parser.
+    The match expression is at the same level of precedence with let-in and if-then-else.
+    Furthermore, just like let-in and if-then-else, it starts with a token
+    (\mintinline{ocaml}{MATCH}) on the left-hand-side,
+    and is ``open'' on the right-hand-side with an exp terminal.
+    So, we will handle match-with just like let-in and if-then-else.
     Before we do that, we need add a new AST constructor, though.
     A match expression \texttt{match $e_1$ with ($x$,$y$) -> $e_2$ end}
     has the following ``pieces'' aside from keywords/tokens: $e_1$, $x$, $y$, $e_2$.
@@ -891,19 +862,25 @@ type exp = CstI of int
     Now, we can implement the parser:
 
     \begin{minted}{ocaml}
-and parseLevel4Exp tokens =
+and parseMatchPair tokens =                     (* NEW FUNCTION *)
+  let rest = consume MATCH tokens in
+  let (e1, tokens1) = parseExp rest in
+  match tokens1 with
+  | WITH::LPAR::NAME(x)::COMMA::NAME(y)::RPAR::ARROW::rest1 ->
+     let (e2, tokens2) = parseExp rest1 in
+     (MatchPair(e1, x, y, e2), tokens2)
+  | _ -> failwith "Badly formed match expression."
+
+and parseLETorIForMATCHorOther otherParseFun tokens =  (* NAME CHANGED *)
   match tokens with
-  | ...
-  | MATCH::rest ->
-     let (e1, tokens1) = parseExp rest in
-     (match tokens1 with
-      | WITH::LPAR::NAME(x)::COMMA::NAME(y)::RPAR::ARROW::rest1 ->
-         let (e2, tokens2) = parseExp rest1 in
-         let rest2 = consume END tokens2 in
-         (MatchPair(e1, x, y, e2), rest2)
-      | _ -> failwith "Badly formed match expression."
-     )
-  | ...
+  | LET::rest -> let (e, tokens2) = parseLetIn tokens
+                 in (e, tokens2)
+  | IF::rest  -> let (e, tokens2) = parseIfThenElse tokens
+                 in (e, tokens2)
+  | MATCH::rest -> let (e, tokens2) = parseMatchPair tokens  (* NEW CASE *)
+                   in (e, tokens2)
+  | _         -> let (e, tokens2) = otherParseFun tokens
+                 in (e, tokens2)
     \end{minted}
 
     Finally, the evaluator:
@@ -922,7 +899,7 @@ let rec eval e env =
     
     Let's test:
     \begin{minted}{ocaml}
-# run "match (5+6, 2*3) with (f,s) -> f + s end";; 
+# run "match (5+6, 2*3) with (f,s) -> f + s";; 
 - : value = Int 17
     \end{minted}
   \end{solution}
@@ -1021,16 +998,14 @@ let rec tokenize chars =
     Parser:
     \begin{minted}{ocaml}
 and parseLevel1_5Exp tokens =
-  ...
-    | GREATEREQ::tok::rest ->
-       (match tok with
-        | LET -> let (e2, tokens2) = parseLetIn (tok::rest)
-                 in (Unary("not", Binary("<", e1, e2)), tokens2)
-        | IF  -> let (e2, tokens2) = parseIfThenElse (tok::rest)
-                 in (Unary("not", Binary("<", e1, e2)), tokens2)
-        | t   -> let (e2, tokens2) = parseLevel2Exp (tok::rest)
-                 in helper tokens2 (Unary("not", Binary("<", e1, e2)))
-       )      
+  let rec helper tokens e1 =
+    match tokens with
+    ...
+    | GREATEREQ::rest ->
+       let (e2, tokens2) = parseLETorIForMATCHorOther parseLevel2Exp rest
+       in helper tokens2 (Unary("not", Binary("<", e1, e2)))
+  in let (e1, tokens1) = parseLevel2Exp tokens in
+  helper tokens1 e1
     \end{minted}    
 
     Testing:
@@ -1045,6 +1020,13 @@ and parseLevel1_5Exp tokens =
 - : value = Bool true
     \end{minted}
   \end{solution}
+
+  \begin{framed}
+    {\color{red}
+    At this point, we have reached Deve 2.0, also available at
+    \url{https://github.com/aktemur/cs321/tree/master/Deve-2.0}.
+    }
+  \end{framed}
 
   
 \end{questions}
