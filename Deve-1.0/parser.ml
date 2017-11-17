@@ -59,27 +59,24 @@ and parseIfThenElse tokens =
   let (e3, tokens5) = parseExp tokens4 in
   (If(e1, e2, e3), tokens5)
   
+and parseLETorIForOther otherParseFun tokens =
+  match tokens with
+  | LET::rest -> let (e, tokens2) = parseLetIn tokens
+                 in (e, tokens2)
+  | IF::rest  -> let (e, tokens2) = parseIfThenElse tokens
+                 in (e, tokens2)
+  | _         -> let (e, tokens2) = otherParseFun tokens
+                 in (e, tokens2)
+
 and parseLevel2Exp tokens =
   let rec helper tokens e1 =
     match tokens with
-    | PLUS::tok::rest ->
-       (match tok with
-        | LET -> let (e2, tokens2) = parseLetIn (tok::rest)
-                 in (Add(e1, e2), tokens2)
-        | IF  -> let (e2, tokens2) = parseIfThenElse (tok::rest)
-                 in (Add(e1, e2), tokens2)
-        | t   -> let (e2, tokens2) = parseLevel3Exp (tok::rest)
-                 in helper tokens2 (Add(e1, e2))
-       )
-    | MINUS::tok::rest ->
-       (match tok with
-        | LET -> let (e2, tokens2) = parseLetIn (tok::rest)
-                 in (Subt(e1, e2), tokens2)
-        | IF  -> let (e2, tokens2) = parseIfThenElse (tok::rest)
-                 in (Subt(e1, e2), tokens2)
-        | t   -> let (e2, tokens2) = parseLevel3Exp (tok::rest)
-                 in helper tokens2 (Subt(e1, e2))
-       )
+    | PLUS::rest ->
+       let (e2, tokens2) = parseLETorIForOther parseLevel3Exp rest
+       in helper tokens2 (Add(e1, e2))
+    | MINUS::rest ->
+       let (e2, tokens2) = parseLETorIForOther parseLevel3Exp rest
+       in helper tokens2 (Subt(e1, e2))
     | _ -> (e1, tokens)
   in let (e1, tokens1) = parseLevel3Exp tokens in
      helper tokens1 e1
@@ -87,24 +84,12 @@ and parseLevel2Exp tokens =
 and parseLevel3Exp tokens =
   let rec helper tokens e1 =
     match tokens with
-    | STAR::tok::rest ->
-       (match tok with
-        | LET -> let (e2, tokens2) = parseLetIn (tok::rest)
-                 in (Mult(e1, e2), tokens2)
-        | IF  -> let (e2, tokens2) = parseIfThenElse (tok::rest)
-                 in (Mult(e1, e2), tokens2)
-        | t   -> let (e2, tokens2) = parseLevel4Exp (tok::rest)
-                 in helper tokens2 (Mult(e1, e2))
-       )
-    | SLASH::tok::rest ->
-       (match tok with
-        | LET -> let (e2, tokens2) = parseLetIn (tok::rest)
-                 in (Div(e1, e2), tokens2)
-        | IF  -> let (e2, tokens2) = parseIfThenElse (tok::rest)
-                 in (Div(e1, e2), tokens2)
-        | t   -> let (e2, tokens2) = parseLevel4Exp (tok::rest)
-                 in helper tokens2 (Div(e1, e2))
-       )
+    | STAR::rest ->
+       let (e2, tokens2) = parseLETorIForOther parseLevel4Exp rest
+       in helper tokens2 (Mult(e1, e2))
+    | SLASH::rest ->
+       let (e2, tokens2) = parseLETorIForOther parseLevel4Exp rest
+       in helper tokens2 (Div(e1, e2))
     | _ -> (e1, tokens)
   in let (e1, tokens1) = parseLevel4Exp tokens in
      helper tokens1 e1

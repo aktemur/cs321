@@ -1,6 +1,13 @@
 (* Test cases *)
-assert (run "30 + 6 * 2" = 42);;
+assert (run "42" = 42);;
+assert (run "true" = 1);;
+assert (run "false" = 0);;
+assert (run "30 + 6" = 36);;
+assert (run "30 - 6" = 24);;
+assert (run "30 * 6" = 180);;
+assert (run "30 / 6" = 5);;
 assert (run "3 + 4 + 5 + 6" = 18);;
+assert (run "30 + 6 * 2" = 42);;
 assert (run "5 * 2 / 3" = 3);;
 assert (run "5 - 2 - 3" = 0);;
 assert (run "let a = 5 in a + 4" = 9);;
