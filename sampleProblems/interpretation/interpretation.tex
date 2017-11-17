@@ -846,7 +846,7 @@ let rec tokenize chars =
     The match expression is at the same level of precedence with let-in and if-then-else.
     Furthermore, just like let-in and if-then-else, it starts with a token
     (\mintinline{ocaml}{MATCH}) on the left-hand-side,
-    and is ``open'' on the right-hand-side with an exp terminal.
+    and is ``open'' on the right-hand-side with an \mintinline{ocaml}{exp} non-terminal.
     So, we will handle match-with just like let-in and if-then-else.
     Before we do that, we need add a new AST constructor, though.
     A match expression \texttt{match $e_1$ with ($x$,$y$) -> $e_2$ end}
