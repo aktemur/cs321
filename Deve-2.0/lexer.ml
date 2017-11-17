@@ -14,7 +14,7 @@ type token = INT of int
            | IF | THEN | ELSE
            | LPAR | RPAR
            | COMMA | FST | SND
-           | MATCH | WITH | ARROW | END
+           | MATCH | WITH | ARROW
            | NOT
            | ERROR of char
            | EOF
@@ -45,7 +45,6 @@ let keyword s =
   | "snd" -> SND
   | "match" -> MATCH
   | "with" -> WITH
-  | "end" -> END
   | "not" -> NOT
   | _ -> NAME s
   

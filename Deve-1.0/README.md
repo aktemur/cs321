@@ -8,6 +8,19 @@ This is a simple programming language
 where we have arithmetic expressions (add, multiply, subtract, divide),
 names, bindings, conditionals, and boolean literals.
 
+Grammar:
+
+```
+main ::= exp EOF
+exp  ::= INT | BOOL | NAME
+       | exp PLUS exp
+       | exp STAR exp
+       | exp MINUS exp
+       | exp SLASH exp
+       | IF exp THEN exp ELSE exp
+       | LET NAME EQUALS exp IN exp
+```
+
 ### Interpreter
 
 To run:

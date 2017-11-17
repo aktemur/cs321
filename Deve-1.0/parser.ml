@@ -36,10 +36,16 @@ let rec parseExp tokens =
   parseLevel1Exp tokens
 
 and parseLevel1Exp tokens =
+  parseLETorIForOther parseLevel2Exp tokens
+
+and parseLETorIForOther otherParseFun tokens =
   match tokens with
-  | LET::rest -> parseLetIn tokens
-  | IF::rest -> parseIfThenElse tokens
-  | _ -> parseLevel2Exp tokens
+  | LET::rest -> let (e, tokens2) = parseLetIn tokens
+                 in (e, tokens2)
+  | IF::rest  -> let (e, tokens2) = parseIfThenElse tokens
+                 in (e, tokens2)
+  | _         -> let (e, tokens2) = otherParseFun tokens
+                 in (e, tokens2)
 
 and parseLetIn tokens =
   match tokens with
@@ -59,15 +65,6 @@ and parseIfThenElse tokens =
   let (e3, tokens5) = parseExp tokens4 in
   (If(e1, e2, e3), tokens5)
   
-and parseLETorIForOther otherParseFun tokens =
-  match tokens with
-  | LET::rest -> let (e, tokens2) = parseLetIn tokens
-                 in (e, tokens2)
-  | IF::rest  -> let (e, tokens2) = parseIfThenElse tokens
-                 in (e, tokens2)
-  | _         -> let (e, tokens2) = otherParseFun tokens
-                 in (e, tokens2)
-
 and parseLevel2Exp tokens =
   let rec helper tokens e1 =
     match tokens with
