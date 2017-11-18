@@ -97,6 +97,3 @@ let chars_of_string s =
 let scan s =
   tokenize (chars_of_string s)
 ;;
-
-
-  
