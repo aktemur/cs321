@@ -14,6 +14,7 @@ let rec valToString v =
   | Bool b -> string_of_bool b
   | Pair(v1, v2) -> "(" ^ valToString(v1) ^ "," ^ valToString(v2) ^ ")"
   | Closure(x,e,env) -> "<fun>"
+  | RecClosure(f,x,e,env) -> "<fun>"
 
 let deveREPL() =
   let rec readInput() =

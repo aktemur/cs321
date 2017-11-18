@@ -29,6 +29,7 @@ let toString tok =
   | ARROW -> "ARROW"
   | NOT -> "NOT"
   | FUN -> "FUN"
+  | REC -> "REC"
 
 (* consume: token -> token list -> token list
    Enforces that the given token list's head is the given token;
@@ -73,7 +74,12 @@ and parseLetIn tokens =
      let tokens2 = consume IN tokens1 in
      let (e2, tokens3) = parseExp tokens2 in
      (LetIn(f, Fun(x, e1), e2), tokens3)
-  | _ -> failwith "Should not be possible."
+  | LET::REC::NAME(f)::NAME(x)::EQUALS::rest ->
+     let (e1, tokens1) = parseExp rest in
+     let tokens2 = consume IN tokens1 in
+     let (e2, tokens3) = parseExp tokens2 in
+     (LetRec(f, x, e1, e2), tokens3)
+  | _ -> failwith "Badly formed let expression"  
 
 and parseIfThenElse tokens =
   let rest = consume IF tokens in

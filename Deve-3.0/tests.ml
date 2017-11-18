@@ -89,5 +89,17 @@ assert (run "let x = 12
              in let f y = x + y
                 in let x = 99
                    in f (x + 1)" = Int 112);;
+assert (run "let rec f x = x + 5 in f 37" = Int 42);;
+assert (run "let rec fact n =
+               if n <= 0 then 1 else n * fact (n-1)
+             in fact 5" = Int 120);;
+assert (run "let rec fib n =
+               if n <= 0 then 1 
+               else if n <= 1 then 1
+               else fib (n-1) + fib (n-2)
+             in (fib 5, (fib 6, fib 7))" = Pair (Int 8, Pair (Int 13, Int 21)));;
+assert (run "let rec power x = fun n ->
+               if n <= 0 then 1 else x * power x (n-1)
+             in power 3 4" = Int 81);;
 
     
