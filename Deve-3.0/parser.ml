@@ -68,6 +68,11 @@ and parseLetIn tokens =
      let tokens2 = consume IN tokens1 in
      let (e2, tokens3) = parseExp tokens2 in
      (LetIn(x, e1, e2), tokens3)
+  | LET::NAME(f)::NAME(x)::EQUALS::rest ->
+     let (e1, tokens1) = parseExp rest in
+     let tokens2 = consume IN tokens1 in
+     let (e2, tokens3) = parseExp tokens2 in
+     (LetIn(f, Fun(x, e1), e2), tokens3)
   | _ -> failwith "Should not be possible."
 
 and parseIfThenElse tokens =

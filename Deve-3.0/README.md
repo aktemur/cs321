@@ -29,6 +29,7 @@ exp  ::= INT | BOOL | NAME
        | IF exp THEN exp ELSE exp
        | LET NAME EQUALS exp IN exp
        | FUN NAME ARROW exp
+       | LET NAME NAME EQUALS exp IN exp
 ```
 
 ### Interpreter
