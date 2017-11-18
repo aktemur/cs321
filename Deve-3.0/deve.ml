@@ -7,6 +7,7 @@ type exp = CstI of int
          | If of exp * exp * exp
          | MatchPair of exp * string * string * exp
          | Fun of string * exp
+         | App of exp * exp
 
 type value = Int of int
            | Bool of bool
@@ -57,4 +58,12 @@ let rec eval e env =
       | _ -> failwith "Pair pattern matching works on pair values only (obviously)!"
      )
   | Fun(x, e) -> Closure(x, e, env)
+  | App(e1, e2) ->
+     let closure = eval e1 env in
+     (match closure with
+      | Closure(x, funBody, funEnv) ->
+         let v2 = eval e2 env
+         in eval funBody ((x, v2)::funEnv)
+      | _ -> failwith "Application wants to see a closure!"
+     )
 

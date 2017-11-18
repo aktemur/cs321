@@ -143,6 +143,25 @@ and parseLevel3Exp tokens =
      helper tokens1 e1
 
 and parseLevel4Exp tokens =
+  let rightHandSideExists token =
+    match token with
+    (* tokens that are the beginning of an atom *)
+    | INT _ | NAME _ | BOOL _ | LPAR | FST | SND | NOT -> true
+    (* other tokens that may start the right-hand-side exp *)
+    | LET | IF | MATCH | FUN -> true
+    | _ -> false
+  in
+  let rec helper tokens e1 =
+    match tokens with
+    | tok::rest when rightHandSideExists(tok) ->
+       let (e2, tokens2) = parseLevel1ExpOrOther parseAtomExp tokens
+       in helper tokens2 (App(e1, e2))
+    | _ ->
+       (e1, tokens)
+  in let (e1, tokens1) = parseAtomExp tokens in
+     helper tokens1 e1
+
+and parseAtomExp tokens =
   match tokens with
   | INT i :: rest -> (CstI i, rest)
   | NAME x :: rest -> (Var x, rest)

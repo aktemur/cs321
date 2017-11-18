@@ -65,3 +65,29 @@ assert (run "let y = 5
              in let f x = x + y
                 in f" =
           Closure("x", Binary("+", Var "x", Var "y"), [("y", Int 5)]));;
+assert (run "let x = 12
+             in let f y = x + y
+                in let x = 99
+                   in f" =
+          Closure ("y", Binary ("+", Var "x", Var "y"), [("x", Int 12)]));;
+assert (parse "x y z" = App(App(Var "x", Var "y"), Var "z"));;
+assert (parse "f 3 + 1" = Binary("+", App(Var "f", CstI 3), CstI 1));;
+assert (parse "3 + f 1" = Binary("+", CstI 3, App(Var "f", CstI 1)));;
+assert (parse "f let x = 5 in x" = App(Var "f", LetIn("x", CstI 5, Var "x")));;
+assert (parse "let x = 5 in f x" = LetIn("x", CstI 5, App(Var "f", Var "x")));;
+assert (parse "let x = 5 in f 3 + 1" = LetIn("x", CstI 5,
+                                             Binary("+", App(Var "f", CstI 3), CstI 1)));;
+assert (parse "let x = 5 in 3 + f 1" = LetIn("x", CstI 5,
+                                             Binary("+", CstI 3, App(Var "f", CstI 1))));;
+assert (run "let f x = 42 in f 9" = Int 42);;
+assert (run "let f x = x + 30 in f 12" = Int 42);;
+assert (run "let f = fun x -> fun y -> x + y 
+             in f 30 12" = Int 42);;
+assert (run "let f = fun x -> fun y -> x + y 
+             in f 30" = Closure ("y", Binary ("+", Var "x", Var "y"), [("x", Int 30)]));;
+assert (run "let x = 12
+             in let f y = x + y
+                in let x = 99
+                   in f (x + 1)" = Int 112);;
+
+    

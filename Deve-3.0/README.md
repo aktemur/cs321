@@ -6,7 +6,7 @@
 
 This is a simple programming language
 where we have arithmetic expressions (add, multiply, subtract, divide),
-names, bindings, conditionals, booleans, etc.
+names, bindings, conditionals, booleans, and functions.
 
 Grammar:
 
@@ -30,6 +30,7 @@ exp  ::= INT | BOOL | NAME
        | LET NAME EQUALS exp IN exp
        | FUN NAME ARROW exp
        | LET NAME NAME EQUALS exp IN exp
+       | exp exp
 ```
 
 ### Interpreter
