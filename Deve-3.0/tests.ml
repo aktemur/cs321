@@ -58,3 +58,5 @@ assert (run "not(true)" = Bool false);;
 assert (run "4 >= 5" = Bool false);;
 assert (run "4 >= 4" = Bool true);;
 assert (run "5 >= 4" = Bool true);;
+assert (run "fun x -> 42" = Closure("x", CstI 42, []));;
+assert (run "let y = 2+3 in fun x -> 42" = Closure("x", CstI 42, [("y", Int 5)]));;

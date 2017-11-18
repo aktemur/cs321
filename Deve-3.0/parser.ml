@@ -28,6 +28,7 @@ let toString tok =
   | WITH -> "WITH"
   | ARROW -> "ARROW"
   | NOT -> "NOT"
+  | FUN -> "FUN"
 
 (* consume: token -> token list -> token list
    Enforces that the given token list's head is the given token;
@@ -45,12 +46,9 @@ let consume tok tokens =
    returns that exp together with the unconsumed tokens.
  *)
 let rec parseExp tokens =
-  parseLevel1Exp tokens
+  parseLevel1ExpOrOther parseLevel1_5Exp tokens
 
-and parseLevel1Exp tokens =
-  parseLETorIForMATCHorOther parseLevel1_5Exp tokens
-
-and parseLETorIForMATCHorOther otherParseFun tokens =
+and parseLevel1ExpOrOther otherParseFun tokens =
   match tokens with
   | LET::rest -> let (e, tokens2) = parseLetIn tokens
                  in (e, tokens2)
@@ -58,6 +56,8 @@ and parseLETorIForMATCHorOther otherParseFun tokens =
                  in (e, tokens2)
   | MATCH::rest -> let (e, tokens2) = parseMatchPair tokens
                    in (e, tokens2)
+  | FUN::rest -> let (e, tokens2) = parseFun tokens
+                 in (e, tokens2)
   | _         -> let (e, tokens2) = otherParseFun tokens
                  in (e, tokens2)
 
@@ -88,17 +88,24 @@ and parseMatchPair tokens =
      (MatchPair(e1, x, y, e2), tokens2)
   | _ -> failwith "Badly formed match expression."
 
+and parseFun tokens =
+  match tokens with
+  | FUN::NAME(x)::ARROW::rest ->
+     let (e, tokens1) = parseExp rest in
+     (Fun(x, e), tokens1)
+  | _ -> failwith "Badly formed fun definition."
+
 and parseLevel1_5Exp tokens =
   let rec helper tokens e1 =
     match tokens with
     | LESS::rest ->
-       let (e2, tokens2) = parseLETorIForMATCHorOther parseLevel2Exp rest
+       let (e2, tokens2) = parseLevel1ExpOrOther parseLevel2Exp rest
        in helper tokens2 (Binary("<", e1, e2))
     | LESSEQ::rest ->
-       let (e2, tokens2) = parseLETorIForMATCHorOther parseLevel2Exp rest
+       let (e2, tokens2) = parseLevel1ExpOrOther parseLevel2Exp rest
        in helper tokens2 (Binary("<=", e1, e2))
     | GREATEREQ::rest ->
-       let (e2, tokens2) = parseLETorIForMATCHorOther parseLevel2Exp rest
+       let (e2, tokens2) = parseLevel1ExpOrOther parseLevel2Exp rest
        in helper tokens2 (Unary("not", Binary("<", e1, e2)))
     | _ -> (e1, tokens)
   in let (e1, tokens1) = parseLevel2Exp tokens in
@@ -108,10 +115,10 @@ and parseLevel2Exp tokens =
   let rec helper tokens e1 =
     match tokens with
     | PLUS::rest ->
-       let (e2, tokens2) = parseLETorIForMATCHorOther parseLevel3Exp rest
+       let (e2, tokens2) = parseLevel1ExpOrOther parseLevel3Exp rest
        in helper tokens2 (Binary("+", e1, e2))
     | MINUS::rest ->
-       let (e2, tokens2) = parseLETorIForMATCHorOther parseLevel3Exp rest
+       let (e2, tokens2) = parseLevel1ExpOrOther parseLevel3Exp rest
        in helper tokens2 (Binary("-", e1, e2))
     | _ -> (e1, tokens)
   in let (e1, tokens1) = parseLevel3Exp tokens in
@@ -121,10 +128,10 @@ and parseLevel3Exp tokens =
   let rec helper tokens e1 =
     match tokens with
     | STAR::rest ->
-       let (e2, tokens2) = parseLETorIForMATCHorOther parseLevel4Exp rest
+       let (e2, tokens2) = parseLevel1ExpOrOther parseLevel4Exp rest
        in helper tokens2 (Binary("*", e1, e2))
     | SLASH::rest ->
-       let (e2, tokens2) = parseLETorIForMATCHorOther parseLevel4Exp rest
+       let (e2, tokens2) = parseLevel1ExpOrOther parseLevel4Exp rest
        in helper tokens2 (Binary("/", e1, e2))
     | _ -> (e1, tokens)
   in let (e1, tokens1) = parseLevel4Exp tokens in

@@ -28,6 +28,7 @@ exp  ::= INT | BOOL | NAME
        | NOT LPAR exp RPAR
        | IF exp THEN exp ELSE exp
        | LET NAME EQUALS exp IN exp
+       | FUN NAME ARROW exp
 ```
 
 ### Interpreter
