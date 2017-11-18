@@ -58,14 +58,14 @@ assert (run "not(true)" = Bool false);;
 assert (run "4 >= 5" = Bool false);;
 assert (run "4 >= 4" = Bool true);;
 assert (run "5 >= 4" = Bool true);;
-assert (run "fun x -> 42" = Closure("x", CstI 42, []));;
-assert (run "let y = 2+3 in fun x -> 42" = Closure("x", CstI 42, [("y", Int 5)]));;
-assert (run "let f x = 42 in f" = Closure("x", CstI 42, []));;
-assert (run "let y = 5
+assert (runBare "fun x -> 42" = Closure("x", CstI 42, []));;
+assert (runBare "let y = 2+3 in fun x -> 42" = Closure("x", CstI 42, [("y", Int 5)]));;
+assert (runBare "let f x = 42 in f" = Closure("x", CstI 42, []));;
+assert (runBare "let y = 5
              in let f x = x + y
                 in f" =
           Closure("x", Binary("+", Var "x", Var "y"), [("y", Int 5)]));;
-assert (run "let x = 12
+assert (runBare "let x = 12
              in let f y = x + y
                 in let x = 99
                    in f" =
@@ -83,7 +83,7 @@ assert (run "let f x = 42 in f 9" = Int 42);;
 assert (run "let f x = x + 30 in f 12" = Int 42);;
 assert (run "let f = fun x -> fun y -> x + y 
              in f 30 12" = Int 42);;
-assert (run "let f = fun x -> fun y -> x + y 
+assert (runBare "let f = fun x -> fun y -> x + y 
              in f 30" = Closure ("y", Binary ("+", Var "x", Var "y"), [("x", Int 30)]));;
 assert (run "let x = 12
              in let f y = x + y

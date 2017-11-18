@@ -22,12 +22,9 @@ let toString tok =
   | LPAR -> "LPAR"
   | RPAR -> "RPAR"
   | COMMA -> "COMMA"
-  | FST -> "FST"
-  | SND -> "SND"
   | MATCH -> "MATCH"
   | WITH -> "WITH"
   | ARROW -> "ARROW"
-  | NOT -> "NOT"
   | FUN -> "FUN"
   | REC -> "REC"
 
@@ -117,7 +114,7 @@ and parseLevel1_5Exp tokens =
        in helper tokens2 (Binary("<=", e1, e2))
     | GREATEREQ::rest ->
        let (e2, tokens2) = parseLevel1ExpOrOther parseLevel2Exp rest
-       in helper tokens2 (Unary("not", Binary("<", e1, e2)))
+       in helper tokens2 (If(Binary("<", e1, e2), CstB false, CstB true))
     | _ -> (e1, tokens)
   in let (e1, tokens1) = parseLevel2Exp tokens in
      helper tokens1 e1
@@ -152,7 +149,7 @@ and parseLevel4Exp tokens =
   let rightHandSideExists token =
     match token with
     (* tokens that are the beginning of an atom *)
-    | INT _ | NAME _ | BOOL _ | LPAR | FST | SND | NOT -> true
+    | INT _ | NAME _ | BOOL _ | LPAR -> true
     (* other tokens that may start the right-hand-side exp *)
     | LET | IF | MATCH | FUN -> true
     | _ -> false
@@ -182,18 +179,6 @@ and parseAtomExp tokens =
          (Binary(",", e1, e2), rest2)
       | _ -> failwith "Badly formed parethesized exp."
      )
-  | FST::LPAR::rest ->
-     let (e, tokens1) = parseExp rest in
-     let rest1 = consume RPAR tokens1 in
-     (Unary("fst", e), rest1)     
-  | SND::LPAR::rest ->
-     let (e, tokens1) = parseExp rest in
-     let rest1 = consume RPAR tokens1 in
-     (Unary("snd", e), rest1)     
-  | NOT::LPAR::rest ->
-     let (e, tokens1) = parseExp rest in
-     let rest1 = consume RPAR tokens1 in
-     (Unary("not", e), rest1)
   | t::rest -> failwith ("Unsupported token: " ^ toString(t))
   | [] -> failwith "No more tokens???"
 

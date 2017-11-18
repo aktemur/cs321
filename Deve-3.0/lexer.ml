@@ -13,9 +13,8 @@ type token = INT of int
            | LET | EQUALS | IN
            | IF | THEN | ELSE
            | LPAR | RPAR
-           | COMMA | FST | SND
+           | COMMA
            | MATCH | WITH | ARROW
-           | NOT
            | FUN | REC
            | ERROR of char
            | EOF
@@ -42,11 +41,8 @@ let keyword s =
   | "else" -> ELSE
   | "true" -> BOOL true
   | "false" -> BOOL false
-  | "fst" -> FST
-  | "snd" -> SND
   | "match" -> MATCH
   | "with" -> WITH
-  | "not" -> NOT
   | "fun" -> FUN
   | "rec" -> REC
   | _ -> NAME s

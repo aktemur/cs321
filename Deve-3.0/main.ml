@@ -4,7 +4,18 @@
 
 open Printf
 
+let wrapStdlib code =
+  "let fst p = match p with (x,y) -> x in
+   let snd p = match p with (x,y) -> y in
+   let not b = if b then false else true
+   in " ^ code
+;;
+
 let run code =
+  eval (parse (wrapStdlib code)) []
+;;
+
+let runBare code =
   eval (parse code) []
 ;;
 

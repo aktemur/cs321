@@ -1,7 +1,6 @@
 type exp = CstI of int
          | CstB of bool
          | Var of string
-         | Unary of string * exp
          | Binary of string * exp * exp
          | LetIn of string * exp * exp
          | LetRec of string * string * exp * exp
@@ -28,13 +27,6 @@ let rec eval e env =
   | CstI i -> Int i
   | CstB b -> Bool b
   | Var x -> lookup x env
-  | Unary(op, e) ->
-     let v = eval e env in
-     (match op, v with
-      | "fst", Pair(v1, v2) -> v1
-      | "snd", Pair(v1, v2) -> v2
-      | "not", Bool b -> Bool (not b)
-     )
   | Binary(op, e1, e2)  ->
      let v1 = eval e1 env in
      let v2 = eval e2 env in
