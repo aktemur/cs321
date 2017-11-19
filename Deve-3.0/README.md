@@ -22,16 +22,13 @@ exp  ::= INT | BOOL | NAME
        | exp GREATEREQ exp
        | LPAR exp RPAR
        | LPAR exp COMMA exp RPAR
-       | FST LPAR exp RPAR
-       | SND LPAR exp RPAR
        | MATCH exp WITH LPAR NAME COMMA NAME RPAR ARROW exp
-       | NOT LPAR exp RPAR
        | IF exp THEN exp ELSE exp
        | LET NAME EQUALS exp IN exp
-       | FUN NAME ARROW exp
        | LET NAME NAME EQUALS exp IN exp
-       | exp exp
        | LET REC NAME NAME EQUALS exp IN exp
+       | FUN NAME ARROW exp
+       | exp exp
 ```
 
 ### Interpreter
