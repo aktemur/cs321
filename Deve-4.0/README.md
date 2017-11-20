@@ -62,18 +62,19 @@ To run:
 - : value = Pair (Int 3, Bool true)
 # run "((3, 7 + 9), 5 < 8)";;
 - : value = Pair (Pair (Int 3, Int 16), Bool true)
-# run "let rec fact n =
+# run "let rec fact (n:int) : int =
          if n <= 0 then 1 else n * fact (n-1)
        in fact 6";;
-- : value = Int 720
-# run "let rec fib n =
+- : typ * value = (IntTy, Int 720)
+# run "let rec fib (n:int) :int =
          if n <= 0 then 1 
          else if n <= 1 then 1
          else fib (n-1) + fib (n-2)
        in (fib 5, (fib 6, fib 7))";;
 - : value = Pair (Int 8, Pair (Int 13, Int 21))
-# run "let rec power x = fun n ->
-         if n <= 0 then 1 else x * power x (n-1)
-       in power 3 4";;
-- : value = Int 81
+# typeCheckAndRun
+  "let rec power (x:int) : int -> int = fun (n:int) ->
+     if n <= 0 then 1 else x * power x (n-1)
+   in power 3 4";;
+- : typ * value = (IntTy, Int 81)
 ```
