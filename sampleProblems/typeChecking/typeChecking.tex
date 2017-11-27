@@ -1,0 +1,669 @@
+\documentclass[addpoints]{exam}
+
+%\printanswers
+\noprintanswers
+
+\usepackage{amsmath,bigstrut,minted,url,graphicx,tikz,marvosym,rotating}
+\usepackage{ebproof}
+
+\pagestyle{headandfoot}
+\runningheadrule
+\firstpageheader{}{}{Page \thepage\ of \numpages}
+\runningheader{CS 321}{Sample Problems}{Page \thepage\ of \numpages}
+\firstpagefooter{}{}{}
+\runningfooter{}{}{}
+              
+\newcommand{\EJDG}[3]{#1 \vdash #2 \Rightarrow #3}
+\newcommand{\TJDG}[3]{#1 \vdash #2 : #3}
+\renewcommand{\L}[2]{\lambda #1.#2}
+
+\begin{document}
+
+\begin{center}
+{\Large \textbf{
+    Ozyegin University\\
+    CS 321 Programming Languages\\
+    Sample Problems on Type Checking
+}}
+\end{center}
+
+\section*{Reference}
+Typing rules of the Deve language are given below.
+
+\input{../../../lectures/typeChecking/typingRules.tex}
+
+\newpage
+The \mintinline{ocaml}{typeOf} function is given below.
+
+{\small
+\begin{minted}[mathescape,frame=single]{ocaml}
+type typ = IntTy
+         | BoolTy
+         | PairTy of typ * typ
+         | FunTy of typ * typ
+
+(* typeOf: exp -> (string * typ) list -> typ *)
+let rec typeOf e tyEnv =
+  match e with
+  | CstI i -> IntTy
+  | CstB b -> BoolTy
+  | Var x -> lookup x tyEnv
+  | Binary(op, e1, e2)  ->
+     let t1 = typeOf e1 tyEnv in
+     let t2 = typeOf e2 tyEnv in
+     (match op, t1, t2 with
+      | "+", IntTy, IntTy -> IntTy
+      | "-", IntTy, IntTy -> IntTy
+      | "*", IntTy, IntTy -> IntTy
+      | "/", IntTy, IntTy -> IntTy
+      | "<", IntTy, IntTy -> BoolTy
+      | "<=", IntTy, IntTy -> BoolTy
+      | ",", _, _ -> PairTy(t1, t2)
+      | _ -> failwith ("Bad use of the binary operator: " ^ op)
+     )
+  | LetIn(x, e1, e2) ->
+     let t = typeOf e1 tyEnv
+     in let tyEnv' = (x, t)::tyEnv
+        in typeOf e2 tyEnv'
+  | LetRec(f, (x,t1), retTy, e1, e2) ->
+     let tBody = typeOf e1 ((f, FunTy(t1,retTy))::(x,t1)::tyEnv)
+     in if tBody = retTy then
+          typeOf e2 ((f, FunTy(t1,retTy))::tyEnv)
+        else failwith "Return type of the rec. function should agree with the type of the bofy."
+  | If(e1, e2, e3) -> (match typeOf e1 tyEnv with
+                       | BoolTy -> let t2 = typeOf e2 tyEnv in
+                                   let t3 = typeOf e3 tyEnv in
+                                   if t2 = t3 then t2
+                                   else failwith "Branch types of an if-then-else must agree." 
+                       | _ -> failwith "Condition should be a bool.")
+  | MatchPair(e1, x, y, e2) ->
+     (match typeOf e1 tyEnv with
+      | PairTy(t1, t2) -> typeOf e2 ((x,t1)::(y,t2)::tyEnv)
+      | _ -> failwith "Pair pattern matching works on pair values only (obviously)!"
+     )
+  | Fun((x, t), e) ->
+     let tBody = typeOf e ((x,t)::tyEnv)
+     in FunTy(t, tBody)
+  | App(e1, e2) ->
+     (match typeOf e1 tyEnv with
+      | FunTy(t2, t1) ->
+         if t2 = typeOf e2 tyEnv then t1
+         else failwith "Function parameter type should agree with the argument type."
+      | _ -> failwith "Application wants to see a function!"
+     )  
+\end{minted}
+}
+
+\newpage
+\section*{Questions}
+\begin{questions}
+  \question
+  For each of the program points below,
+  write down the \emph{type environment}. Assume that we start
+  with the empty environment. 
+
+  \begin{minipage}{0.35\textwidth}
+  \begin{parts}
+    \part
+    \begin{minted}{ocaml}
+let x = 9 in
+(* program point 1 *)
+let f y = x * y in
+(* program point 2 *)
+let x = 4 in
+(* program point 3 *)
+let y = 7 in
+(* program point 4 *)
+f x
+    \end{minted}
+
+    \part
+    \begin{minted}{ocaml}
+let x = 9 in
+(* program point 1 *)
+let y = let x = 13 in
+    (* program point 2 *)
+        x + 2 in
+(* program point 3 *)
+y + x
+    \end{minted}
+
+    \part
+    \begin{minted}{ocaml}
+let add x y = x + y in
+(* program point 1 *)
+let foo = add 10 in
+(* program point 2 *)
+let baz = foo 20 in
+(* program point 3 *)
+baz
+    \end{minted}
+  \end{parts}
+  \end{minipage}%
+  \begin{minipage}{0.65\textwidth}
+    \begin{solutionbox}{3.5cm}
+      \begin{itemize}
+      \item 1: $[\texttt{x}\mapsto int]$
+      \item 2: $[\texttt{f}\mapsto (int\to int), \texttt{x}\mapsto int]$
+      \item 3: $[\texttt{x}\mapsto int, \texttt{f}\mapsto (int\to int), \texttt{x}\mapsto int]$
+      \item 4: $[\texttt{y}\mapsto int, \texttt{x}\mapsto int, \texttt{f}\mapsto (int\to int), \texttt{x}\mapsto int]$
+      \end{itemize}
+    \end{solutionbox}
+
+    \begin{solutionbox}{3cm}
+      \begin{itemize}
+      \item 1: $[\texttt{x}\mapsto int]$
+      \item 2: $[\texttt{x}\mapsto int, \texttt{x}\mapsto int]$
+      \item 3: $[\texttt{y}\mapsto int, \texttt{x}\mapsto int]$
+      \end{itemize}
+    \end{solutionbox}
+
+    \begin{solutionbox}{3cm}
+      \begin{itemize}
+      \item 1: $[\texttt{add}\mapsto (int \to int \to int)]$
+      \item 2: $[\texttt{foo}\mapsto (int \to int), \texttt{add}\mapsto (int \to int \to int)]$
+      \item 3: $[\texttt{baz} \mapsto int, \texttt{foo}\mapsto (int \to int), \texttt{add}\mapsto (int \to int \to int)]$
+      \end{itemize}
+    \end{solutionbox}
+  \end{minipage}
+
+  
+  \question
+  Suppose we had ``min'' and ``max'' as binary operators.
+  Define typing rules for them and
+  also show how the \mintinline{ocaml}{typeOf} function would be implemented.
+
+  \begin{solutionbox}{4cm}
+    \[
+    \frac{\TJDG{\rho}{e_1}{\mathrm{int}} \qquad \TJDG{\rho}{e_2}{\mathrm{int}}}
+         {\TJDG{\rho}{\texttt{min($e_1$,$e_2$)}}{\mathrm{int}}}
+         \qquad \textrm{(and similarly for \texttt{max})}
+    \]
+
+    For the implementation, add a new Binary operator case for each.
+
+    \begin{minted}{ocaml}
+      | "min", IntTy, IntTy -> BoolTy
+      | "max", IntTy, IntTy -> BoolTy
+    \end{minted}
+  \end{solutionbox}
+  
+  \question
+  Suppose we had ``='' as a binary operator for equality checking.
+  Define typing rules for this operator and
+  also show how the \mintinline{ocaml}{typeOf} function would be implemented.
+  ``='' works for between any pair of values as long as they have the same type.
+  E.g. These are fine: \texttt{4 = 6}, \texttt{(4<5) = true}, \texttt{(4,5) = (3+1,10/2)}
+
+  \begin{solutionbox}{5cm}
+    \[
+    \frac{\TJDG{\rho}{e_1}{\tau} \qquad \TJDG{\rho}{e_2}{\tau}}
+         {\TJDG{\rho}{\texttt{$e_1$=$e_2$}}{\mathrm{bool}}}
+    \]
+
+    For the implementation, add a new Binary operator case.
+
+    \begin{minted}{ocaml}
+      | "=", _, _ when t1 = t2 -> BoolTy
+    \end{minted}
+
+    Or:
+
+    \begin{minted}{ocaml}
+      | "=", _, _ -> if t1 = t2 then BoolTy
+                     else failwith "Bad use of = operator."
+    \end{minted}
+  \end{solutionbox}
+
+  \question
+  Suppose we had unary operators in the language,
+  represented with the \mintinline{ocaml}{Unary of string * exp}
+  constructor.
+  Define typing rules for the ``fst'' and ``snd'' unary operators and
+  also show how the \mintinline{ocaml}{typeOf} function would be implemented.
+
+  \begin{solutionbox}{7cm}
+    \[
+    \frac{\TJDG{\rho}{e}{(\tau_1\times\tau_2)}}
+         {\TJDG{\rho}{\texttt{fst($e$))}}{\tau_1}}
+    \qquad
+    \frac{\TJDG{\rho}{e}{(\tau_1\times\tau_2)}}
+         {\TJDG{\rho}{\texttt{snd($e$))}}{\tau_2}}
+    \]
+
+    For the implementation, add a new case.
+
+    \begin{minted}{ocaml}
+let rec typeOf e tyEnv =
+  match e with
+  ...
+  | Unary(op, e)  ->
+     let t = typeOf e tyEnv in
+     (match op, t1, t2 with
+      | "fst", PairTy(t1, t2) -> t1
+      | "snd", PairTy(t1, t2) -> t2
+      | _ -> failwith ("Bad use of the unary operator: " ^ op)
+     )
+    \end{minted}
+  \end{solutionbox}
+
+  \question
+  Using the Deve typing rules,
+  show the type derivation tree for the type judgment
+  given below.
+  \[
+  \small
+  \TJDG{[\,]}{\texttt{let x = 1 in x < 2}}{bool} 
+  \]
+
+  \begin{solutionbox}{3cm}
+    \[
+    \begin{prooftree}
+        \infer0[(1)]{\TJDG{[\,]}{\texttt{1}}{int}}
+            \hypo{[\texttt{x}\mapsto int](x) = int}
+          \infer1[(3)]{\TJDG{[\texttt{x}\mapsto int]}{\texttt{x}}{int}}
+          \infer0[(1)]{\TJDG{[\texttt{x}\mapsto int]}{\texttt{2}}{int}}
+        \infer2[(5)]{\TJDG{[\texttt{x}\mapsto int]}{\texttt{x < 2}}{bool}}
+      \infer2[(8)]{\TJDG{[\,]}{\texttt{let x = 1 in x < 2}}{bool}}
+    \end{prooftree}
+    \]
+  \end{solutionbox}
+
+  \question
+  Using the Deve typing rules,
+  show the type derivation tree for the type judgment
+  given below.
+  \[
+  \small
+  \TJDG{[\,]}{\texttt{let z = 1<2 in if z then 3 else 4}}{int} 
+  \]
+
+  \begin{solutionbox}{3cm}
+    \[
+    \small
+    \begin{prooftree}
+          \infer0[(1)]{\TJDG{[\,]}{\texttt{1}}{int}}
+          \infer0[(1)]{\TJDG{[\,]}{\texttt{2}}{int}}
+        \infer2[(5)]{\TJDG{[\,]}{\texttt{1 < 2}}{bool}}
+            \hypo{[\texttt{z}\mapsto bool](\texttt{z}) = bool}  
+          \infer1[(3)]{\TJDG{[\texttt{z}\mapsto bool]}{\texttt{z}}{bool}}
+          \infer0[(1)]{\TJDG{[\texttt{z}\mapsto bool]}{\texttt{3}}{int}}
+          \infer0[(1)]{\TJDG{[\texttt{z}\mapsto bool]}{\texttt{4}}{int}}
+        \infer3[(7)]{\TJDG{[\texttt{z}\mapsto bool]}{\texttt{if z then 3 else 4}}{int}}
+      \infer2[(8)]{\TJDG{[\,]}{\texttt{let z = 1<2 in if z then 3 else 4}}{int}}
+    \end{prooftree}
+    \]
+  \end{solutionbox}
+
+  \question
+  Each of the following expressions has a problem that prevents it from being 
+  accepted by the Deve type system. In other words, it is impossible 
+  to construct a type derivation tree. Explain at which rule your attempt to
+  build a tree would fail, and why.
+
+  \begin{itemize}
+  \item $\TJDG{[\texttt{y}\mapsto bool]}{\texttt{y < 42}}{bool}$
+    \begin{solutionbox}{3cm}
+      Fails when attempting to use rule 3:
+      \[
+      \begin{prooftree}
+          \hypo{\textrm{\normalsize\Frowny}}
+          \infer1[(3)]{\TJDG{[\texttt{y}\mapsto bool]}{\texttt{y}}{int}}
+          \infer0[(1)]{\TJDG{[\texttt{y}\mapsto bool]}{\texttt{42}}{int}}
+        \infer2[(5)]{\TJDG{[\texttt{y}\mapsto bool]}{\texttt{y < 42}}{bool}}
+      \end{prooftree}
+      \]
+    \end{solutionbox}
+
+  \item $\TJDG{[\,]}{\texttt{let x = 17 in x 25}}{int}$
+    \begin{solutionbox}{3.5cm}
+      \[
+      \begin{prooftree}
+          \infer0[(1)]{\TJDG{[\,]}{\texttt{17}}{int}}
+             \hypo{\textrm{\normalsize\Frowny}}
+            \infer1[(3)]{\TJDG{[\texttt{x}\mapsto int]}{\texttt{x}}{(int \to int)}}
+            \infer0[(1)]{\TJDG{[\texttt{x}\mapsto int]}{\texttt{25}}{int}}
+          \infer2[(10)]{\TJDG{[\texttt{x}\mapsto int]}{\texttt{x 25}}{int}}
+        \infer2[(8)]{\TJDG{[\,]}{\texttt{let x = 17 in x 25}}{int}}
+      \end{prooftree}
+      \]
+    \end{solutionbox}
+
+  \item $\TJDG{[\texttt{x}\mapsto int]}{\texttt{if x < 0 then 54 else false}}{int}$
+    \begin{solutionbox}{3cm}
+      \[\small
+      \begin{prooftree}
+            \hypo{[\texttt{x}\mapsto int](\texttt{x}) = int}
+            \infer1[(3)]{\TJDG{[\texttt{x}\mapsto int]}{\texttt{x}}{int}}
+            \infer0[(1)]{\TJDG{[\texttt{x}\mapsto int]}{\texttt{0}}{int}}
+          \infer2[(5)]{\TJDG{[\texttt{x}\mapsto int]}{\texttt{x < 0}}{bool}}
+          \infer0[(1)]{\TJDG{[\texttt{x}\mapsto int]}{\texttt{54}}{int}}
+            \hypo{\textrm{\normalsize\Frowny}}
+          \infer1[(2)]{\TJDG{[\texttt{x}\mapsto int]}{\texttt{false}}{int}}
+        \infer3[(7)]{\TJDG{[\texttt{x}\mapsto int]}{\texttt{if x < 0 then 54 else false}}{int}}
+      \end{prooftree}
+      \]
+    \end{solutionbox}
+    
+  \end{itemize}
+
+
+  \question
+  Using the Deve typing rules,
+  show the type derivation tree for the type judgment
+  given below.
+
+  \[
+  \TJDG{[\,]}{\texttt{let x = 3+5 in if x<0 then (fun n -> n*2) else (fun z -> z-x)}}{int \to int}
+  \]
+
+  \begin{solutionbox}{1.5cm}
+    This was done in the lecture. Check your notes, or buy coffee for a friend who takes notes.
+  \end{solutionbox}
+
+  \newpage
+  \question
+  Using the Deve typing rules,
+  show the type derivation tree for the type judgment
+  given below.
+  \[
+  \small
+  \TJDG{[\,]}{\texttt{let rec fib (n:int) :int = if n<2 then n else fib(n-1) + fib(n-2) in fib 42}}{int} 
+  \]
+
+  \begin{solutionbox}{20cm}
+    In the solution below, $\rho_1$ stands for the following environment:
+    $[\texttt{fib}\mapsto (int \to int), \texttt{n} \mapsto int]$. Also,
+    $\rho_2$ stands for the following environment:
+    $[\texttt{fib}\mapsto (int \to int)]$.
+
+    \vspace{1cm}
+  \begin{sideways}
+    \begin{minipage}{\textwidth}
+      \[
+      \scriptsize
+      \begin{prooftree}
+                \hypo{\rho_1(\texttt{n}) = int}
+              \infer1[(3)]{\TJDG{\rho_1}{\texttt{n}}{int}}
+              \infer0[(1)]{\TJDG{\rho_1}{\texttt{2}}{int}}
+            \infer2[(5)]{\TJDG{\rho_1}{\texttt{n<2}}{bool}}
+              \hypo{\rho_1(\texttt{n}) = int}
+            \infer1[(3)]{\TJDG{\rho_1}{\texttt{n}}{int}}
+            \hypo{\textrm{\Large $\mathcal{C}$}}
+          \infer3[(7)]{\TJDG{\rho_1}{\texttt{if n<2 then n else fib(n-1) + fib(n-2)}}{int}}
+              \hypo{\rho_2(fib) = (int \to int)}
+            \infer1[(3)]{\TJDG{\rho_2}{\texttt{fib}}{(int \to int)}}
+            \infer0[(1)]{\TJDG{\rho_2}{\texttt{42}}{int}}
+          \infer2[(10)]{\TJDG{\rho_2}{\texttt{fib 42}}{int}}
+        \infer2[(12)]{\TJDG{[\,]}{\texttt{let rec fib (n:int) :int = if n<2 then n else fib(n-1) + fib(n-2) in fib 42}}{int}}
+      \end{prooftree}
+      \]
+
+      \vspace{2cm}
+      And tree {\Large $\mathcal{C}$} is:
+      
+      \[
+      \scriptsize
+      \begin{prooftree}
+                    \hypo{\rho_1(\texttt{fib}) = (int\to int)}
+                \infer1[(3)]{\TJDG{\rho_1}{\texttt{fib}}{(int\to int)}}
+                    \hypo{\rho_1(\texttt{n}) = int}
+                  \infer1[(3)]{\TJDG{\rho_1}{\texttt{n}}{int}}
+                  \infer0[(1)]{\TJDG{\rho_1}{\texttt{1}}{int}}
+                \infer2[(4)]{\TJDG{\rho_1}{\texttt{n-1}}{int}}
+              \infer2[(10)]{\TJDG{\rho_1}{\texttt{fib(n-1)}}{int}}
+                  \hypo{\rho_1(\texttt{fib}) = (int\to int)}
+                \infer1[(3)]{\TJDG{\rho_1}{\texttt{fib}}{(int\to int)}}
+                    \hypo{\rho_1(\texttt{n}) = int}
+                  \infer1[(3)]{\TJDG{\rho_1}{\texttt{n}}{int}}
+                  \infer0[(1)]{\TJDG{\rho_1}{\texttt{2}}{int}}
+                \infer2[(4)]{\TJDG{\rho_1}{\texttt{n-2}}{int}}
+              \infer2[(10)]{\TJDG{\rho_1}{\texttt{fib(n-2)}}{int}}
+            \infer2[(4)]{\TJDG{\rho_1}{\texttt{fib(n-1) + fib(n-2)}}{int}}
+      \end{prooftree}
+      \]
+    \end{minipage}
+  \end{sideways}
+  \end{solutionbox}
+
+  \newpage
+  \question
+  What are the types of the following OCaml
+  expressions? Give types that are as general as possible.
+  You may use Greek letters (e.g. $\alpha, \beta, \gamma, \delta$ etc.)
+  or quoted letters (e.g. \texttt{'a,'b,'c,'d} etc.)
+  for polymorphic types.
+
+  \begin{parts}
+    \part
+    \begin{minted}{ocaml}
+      let q3 f = f(f(f(1)))
+    \end{minted}
+    \begin{solutionbox}{1cm}
+      \mintinline{ocaml}{(int -> int) -> int}
+    \end{solutionbox}
+    
+    \part
+    \begin{minted}{ocaml}
+      let q4 f n = f(f(f(n)))
+    \end{minted}
+    \begin{solutionbox}{1cm}
+      \mintinline{ocaml}{('a -> 'a) -> 'a -> 'a}
+    \end{solutionbox}
+    
+    \part
+    \begin{minted}{ocaml}
+      let q6 p1 p2 = (snd p2, fst p2, snd p1, fst p1)
+    \end{minted}
+    \begin{solutionbox}{1cm}
+      \mintinline{ocaml}{'a * 'b -> 'c * 'd -> 'd * 'c * 'b * 'a}
+    \end{solutionbox}
+    
+    \part
+    \begin{minted}{ocaml}
+      let rec graph f lst =
+        match lst with
+        | [] -> []
+        | (x::xs) -> (x,f x) :: graph f xs
+    \end{minted}
+    \begin{solutionbox}{1cm}
+      \mintinline{ocaml}{('a -> 'b) -> 'a list -> ('a * 'b) list}
+    \end{solutionbox}
+    
+    \part
+    \begin{minted}{ocaml}
+      let rec fold f a lst = 
+        match lst with
+        | [] -> a
+        | x::xs -> fold f (f a x) xs
+    \end{minted}
+    \begin{solutionbox}{1cm}
+      \mintinline{ocaml}{('a -> 'b -> 'a) -> 'a -> 'b list -> 'a}
+    \end{solutionbox}
+    
+    \part
+    \begin{minted}{ocaml}
+      type 'a tree = Leaf of 'a 
+                   | Node of ('a * 'a tree * 'a tree)
+                 
+      let rec flatten t =
+        match t with 
+        | Leaf n -> [n]
+        | Node(n, t1, t2) -> flatten t1 @ (n::flatten t2);;
+    \end{minted}
+    \begin{solutionbox}{1cm}
+      \mintinline{ocaml}{'a tree -> 'a list}
+    \end{solutionbox}
+    
+    \part
+    \begin{minted}{ocaml}
+      let p = (34, true);;
+    \end{minted}
+    \begin{solutionbox}{1cm}
+      \mintinline{ocaml}{int * bool}
+    \end{solutionbox}
+    
+    \part
+    \begin{minted}{ocaml}
+      let f x = (x, (x+5, x > 0));;  
+    \end{minted}
+    \begin{solutionbox}{1cm}
+      \mintinline{ocaml}{int -> int * (int * bool)}
+    \end{solutionbox}
+    
+    \part
+    \begin{minted}{ocaml}
+      let f x y = (y, x);;
+    \end{minted}
+    \begin{solutionbox}{1cm}
+      \mintinline{ocaml}{'a -> 'b -> 'b * 'a}
+    \end{solutionbox}
+    
+    \part
+    \begin{minted}{ocaml}
+      let f (x,y) = (y, x);;
+    \end{minted}
+    \begin{solutionbox}{1cm}
+      \mintinline{ocaml}{'a * 'b -> 'b * 'a}
+    \end{solutionbox}
+    
+    \part
+    \begin{minted}{ocaml}
+      let f x = List.map (fun y -> y*y) x;;
+    \end{minted}
+    \begin{solutionbox}{1cm}
+      \mintinline{ocaml}{int list -> int list}
+    \end{solutionbox}
+    
+    \part
+    \begin{minted}{ocaml}
+      let f x g b = List.fold_left g b x;;        
+    \end{minted}
+    \begin{solutionbox}{1cm}
+      \mintinline{ocaml}{'a list -> ('b -> 'a -> 'b) -> 'b -> 'b}
+    \end{solutionbox}
+    
+    \part
+    \begin{minted}{ocaml}
+      let rec f p =       
+        match p with 
+        | [] -> []
+        | x::xs -> (x+x)::f xs;; 
+    \end{minted}
+    \begin{solutionbox}{1cm}
+      \mintinline{ocaml}{int list -> int list}
+    \end{solutionbox}
+    
+    \part
+    \begin{minted}{ocaml}
+      let f = let max n m = if n - m > 0 then n else m
+              in max 10;;
+    \end{minted}
+    \begin{solutionbox}{1cm}
+      \mintinline{ocaml}{int -> int}
+    \end{solutionbox}
+    
+    \part
+    \begin{minted}{ocaml}
+      let f g x = g(g(g(x)));;     
+    \end{minted}
+    \begin{solutionbox}{1cm}
+      \mintinline{ocaml}{('a -> 'a) -> 'a -> 'a}
+    \end{solutionbox}
+    
+    \part
+    \begin{minted}{ocaml}
+      let apply f x y = f x y;;
+    \end{minted}
+    \begin{solutionbox}{1cm}
+      \mintinline{ocaml}{('a -> 'b -> 'c) -> 'a -> 'b -> 'c}
+    \end{solutionbox}
+    
+    \part
+    \begin{minted}{ocaml}
+      let compose f g x = f(g(x));;
+    \end{minted}
+    \begin{solutionbox}{1cm}
+      \mintinline{ocaml}{('a -> 'b) -> ('c -> 'a) -> 'c -> 'b}
+    \end{solutionbox}
+    
+    \part
+    \begin{minted}{ocaml}
+      let rec g f a lst =
+        match lst with
+        | [] -> a
+        | x::xs -> g f (f a x) xs;;
+    \end{minted}
+    \begin{solutionbox}{1cm}
+      \mintinline{ocaml}{('a -> 'b -> 'a) -> 'a -> 'b list -> 'a}
+    \end{solutionbox}
+    
+    \part
+    \begin{minted}{ocaml}
+      let f x = if x > 0 then Some x else None;;
+    \end{minted}
+    \begin{solutionbox}{1cm}
+      \mintinline{ocaml}{int -> int option}
+    \end{solutionbox}
+    
+    \part
+    \begin{minted}{ocaml}
+      let rec last p lst =                             
+        match lst with                                 
+        | [] -> None                                      
+        | x::xs -> (match last p xs with                
+                    | None -> if p x then Some x else None
+                    | Some y -> Some y);;
+    \end{minted}
+    \begin{solutionbox}{1cm}
+      \mintinline{ocaml}{('a -> bool) -> 'a list -> 'a option}
+    \end{solutionbox}
+    
+    \part
+    \begin{minted}{ocaml}
+      let rec f lst a =                     
+        match lst with                      
+        | [] -> a                           
+        | x::xs -> f xs (x::a);;            
+    \end{minted}
+    \begin{solutionbox}{1cm}
+      \mintinline{ocaml}{'a list -> 'a list -> 'a list}
+    \end{solutionbox}
+    
+  \end{parts}
+  
+  \question
+  Give the most general (polymorphic) types for the following functions.
+  If the function is not typable, write ERROR and explain the problem.
+
+  \begin{parts}
+    \part
+    \begin{minted}{ocaml}
+      let f id = (id 5, id true)
+    \end{minted}
+    \begin{solutionbox}{1cm}
+      ERROR. Function parameter cannot be polymorphic.
+    \end{solutionbox}
+    
+    \part
+    \begin{minted}{ocaml}
+      let rec gee f xs =
+        match xs with
+        | [] -> []
+        | y::ys -> (y, f y)::(gee f ys)
+    \end{minted}
+    \begin{solutionbox}{1cm}
+      \mintinline{ocaml}{('a -> 'b) -> 'a list -> ('a * 'b) list} 
+    \end{solutionbox}
+    
+    \part
+    \begin{minted}{ocaml}
+      let rec f n = f (n+1)
+    \end{minted}
+    \begin{solutionbox}{1cm}
+      \mintinline{ocaml}{int -> 'a}
+    \end{solutionbox}
+  \end{parts}
+  
+\end{questions}
+\end{document}
