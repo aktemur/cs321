@@ -183,8 +183,8 @@ baz
     For the implementation, add a new Binary operator case for each.
 
     \begin{minted}{ocaml}
-      | "min", IntTy, IntTy -> BoolTy
-      | "max", IntTy, IntTy -> BoolTy
+      | "min", IntTy, IntTy -> IntTy
+      | "max", IntTy, IntTy -> IntTy
     \end{minted}
   \end{solutionbox}
   
@@ -239,7 +239,7 @@ let rec typeOf e tyEnv =
   ...
   | Unary(op, e)  ->
      let t = typeOf e tyEnv in
-     (match op, t1, t2 with
+     (match op, t with
       | "fst", PairTy(t1, t2) -> t1
       | "snd", PairTy(t1, t2) -> t2
       | _ -> failwith ("Bad use of the unary operator: " ^ op)
