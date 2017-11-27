@@ -432,7 +432,8 @@ let rec typeOf e tyEnv =
   expressions? Give types that are as general as possible.
   You may use Greek letters (e.g. $\alpha, \beta, \gamma, \delta$ etc.)
   or quoted letters (e.g. \texttt{'a,'b,'c,'d} etc.)
-  for polymorphic types.
+  for polymorphic types. If there is an error, write ERROR and
+  explain the problem.
 
   \begin{parts}
     \part
@@ -630,21 +631,6 @@ let rec typeOf e tyEnv =
       \mintinline{ocaml}{'a list -> 'a list -> 'a list}
     \end{solutionbox}
     
-  \end{parts}
-  
-  \question
-  Give the most general (polymorphic) types for the following functions.
-  If the function is not typable, write ERROR and explain the problem.
-
-  \begin{parts}
-    \part
-    \begin{minted}{ocaml}
-      let f id = (id 5, id true)
-    \end{minted}
-    \begin{solutionbox}{1cm}
-      ERROR. Function parameter cannot be polymorphic.
-    \end{solutionbox}
-    
     \part
     \begin{minted}{ocaml}
       let rec gee f xs =
@@ -663,6 +649,28 @@ let rec typeOf e tyEnv =
     \begin{solutionbox}{1cm}
       \mintinline{ocaml}{int -> 'a}
     \end{solutionbox}
+
+
+    \part
+    \begin{minted}{ocaml}
+      let rec foo x y z =
+        match y with
+        | [] -> z * z
+        | b::bs -> x b (foo x z bs)
+    \end{minted}
+    \begin{solutionbox}{1cm}
+      ERROR. \mintinline{ocaml}{z} is an \mintinline{ocaml}{int}
+      but it is being used in place that expects a \mintinline{ocaml}{list}.
+    \end{solutionbox}
+
+    %% \part
+    %% \begin{minted}{ocaml}
+    %%   let f id = (id 5, id true)
+    %% \end{minted}
+    %% \begin{solutionbox}{1cm}
+    %%   ERROR. Function parameter cannot be polymorphic.
+    %% \end{solutionbox}
+    
   \end{parts}
   
 \end{questions}
