@@ -59,6 +59,8 @@ We use the shortcut names only for convenience.
 Usages of `add`, `mult`, `2`, etc. are simply replaced by their lambda encoding.
 Computation happens using the pure lambda syntax.
 
+### Numbers
+
 ```ocaml
 # parse "0";;
 - : expr = Lambda ("f", Lambda ("x", Var "x"))
@@ -88,4 +90,24 @@ Computation happens using the pure lambda syntax.
 # str(run "mult (mult 2 3) (add 1 3)");;
 - : string =
 "(lambda f.(lambda x.(f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f x))))))))))))))))))))))))))"
+```
+
+### Booleans
+
+```ocaml
+# str(parse "true");;
+- : string = "(lambda a.(lambda b.a))"
+# str(parse "false");;
+- : string = "(lambda a.(lambda b.b))"
+# str(parse "if");;   
+- : string = "(lambda c.(lambda t.(lambda e.((c t) e))))"
+# str(parse "isZero");;
+- : string =
+"(lambda n.((n (lambda x.(lambda a.(lambda b.b)))) (lambda a.(lambda b.a))))"
+# str(run "isZero 0");;
+- : string = "(lambda a.(lambda b.a))"
+# str(run "isZero 2");;
+- : string = "(lambda a.(lambda b.b))"
+# str(run "if (isZero (mult 3 0)) (add 2 3) (succ 1)");;
+- : string = "(lambda f.(lambda x.(f (f (f (f (f x)))))))"
 ```

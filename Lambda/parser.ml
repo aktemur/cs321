@@ -85,6 +85,10 @@ let encodings = [
     ("succ", "(lambda n. lambda f. lambda x.f(n f x))");
     ("add", "(lambda m. lambda n. lambda f. lambda x. m f (n f x))");
     ("mult", "(lambda m. lambda n. lambda f. lambda x. m (n f) x)");
+    ("true", "(lambda a. lambda b. a)");
+    ("false", "(lambda a. lambda b. b)");
+    ("if", "(lambda c. lambda t. lambda e. c t e)");
+    ("isZero", "(lambda n. n (lambda x.(lambda a. lambda b. b)) (lambda a. lambda b. a))");
   ];;
 
 (* parse: string -> exp *)
