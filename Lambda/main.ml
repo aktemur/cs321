@@ -1,5 +1,6 @@
 #use "lambda.ml";;
 #use "lexer.ml";;
+#load "str.cma";; (* For Str.global_replace in the parse function *)
 #use "parser.ml";;
 
 open Printf

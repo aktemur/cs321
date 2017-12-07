@@ -48,3 +48,44 @@ App (Lambda ("x", App (Var "x", Var "x")),
 App (Lambda ("x", App (Var "x", Var "x")),
   Lambda ("x", App (Var "x", Var "x")))
 ```
+
+## Church Encodings
+
+Encodings are defined at
+
+<https://github.com/aktemur/cs321/blob/master/Lambda/parser.ml#L80>
+
+We use the shortcut names only for convenience.
+Usages of `add`, `mult`, `2`, etc. are simply replaced by their lambda encoding.
+Computation happens using the pure lambda syntax.
+
+```ocaml
+# parse "0";;
+- : expr = Lambda ("f", Lambda ("x", Var "x"))
+# str(parse "0");;
+- : string = "(lambda f.(lambda x.x))"
+# str(parse "1");;
+- : string = "(lambda f.(lambda x.(f x)))"
+# str(parse "2");;
+- : string = "(lambda f.(lambda x.(f (f x))))"
+# str(parse "3");;
+- : string = "(lambda f.(lambda x.(f (f (f x)))))"
+# str(parse "succ");;
+- : string = "(lambda n.(lambda f.(lambda x.(f ((n f) x)))))"
+# str(parse "add");;
+- : string = "(lambda m.(lambda n.(lambda f.(lambda x.((m f) ((n f) x))))))"
+# str(parse "mult");;
+- : string = "(lambda m.(lambda n.(lambda f.(lambda x.((m (n f)) x)))))"
+# str(parse "succ (succ 2)");;
+- : string =
+"((lambda n.(lambda f.(lambda x.(f ((n f) x))))) ((lambda n.(lambda f.(lambda x.(f ((n f) x))))) (lambda f.(lambda x.(f (f x))))))"
+# str(run "succ (succ 2)");;
+- : string = "(lambda f.(lambda x.(f (f (f (f x))))))"
+# str(run "add 2 3");;
+- : string = "(lambda f.(lambda x.(f (f (f (f (f x)))))))"
+# str(run "mult 2 3");;
+- : string = "(lambda f.(lambda x.(f (f (f (f (f (f x))))))))"
+# str(run "mult (mult 2 3) (add 1 3)");;
+- : string =
+"(lambda f.(lambda x.(f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f x))))))))))))))))))))))))))"
+```

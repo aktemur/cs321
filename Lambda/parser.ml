@@ -77,6 +77,18 @@ let parseMain tokens =
   if tokens2 = [] then e
   else failwith "Oops."
 
+let encodings = [
+    ("0", "(lambda f. lambda x.x)");
+    ("1", "(lambda f. lambda x.f x)");
+    ("2", "(lambda f. lambda x.f(f x))");
+    ("3", "(lambda f. lambda x.f(f(f x)))");
+    ("succ", "(lambda n. lambda f. lambda x.f(n f x))");
+    ("add", "(lambda m. lambda n. lambda f. lambda x. m f (n f x))");
+    ("mult", "(lambda m. lambda n. lambda f. lambda x. m (n f) x)");
+  ];;
+
 (* parse: string -> exp *)
 let rec parse s =
-  parseMain (scan s)
+  let purify s =
+    List.fold_left (fun acc (r, enc) -> Str.global_replace (Str.regexp r) enc acc) s encodings
+  in parseMain (scan (purify s))
