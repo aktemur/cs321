@@ -17,7 +17,7 @@ let rec subst x e2 e1 =
   | Lambda(y, e1') -> if x = y then Lambda(y, e1')
                       else Lambda(y, subst x e2 e1')
   
-(* reduce: Apply beta-reduction on the give expression *)
+(* reduce: Apply beta-reduction on the given expression *)
 let rec reduce e =
   match e with
   | Var x -> Var x
@@ -40,4 +40,4 @@ let rec str e =
   match e with
   | Var x -> x
   | App(e1, e2) -> "(" ^ str e1 ^ " " ^ str e2 ^ ")"
-  | Lambda(x, e1) -> "(\\" ^ x ^ "." ^ str e1 ^ ")"
+  | Lambda(x, e1) -> "(lambda " ^ x ^ "." ^ str e1 ^ ")"
