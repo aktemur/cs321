@@ -90,6 +90,12 @@ Computation happens using the pure lambda syntax.
 # str(run "mult (mult 2 3) (add 1 3)");;
 - : string =
 "(lambda f.(lambda x.(f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f x))))))))))))))))))))))))))"
+# str(run "pred 3");; (* predecessor function that returns the preceding number *)
+- : string = "(lambda f.(lambda x.(f (f x))))"
+# str(run "pred (mult 2 3)");;
+- : string = "(lambda f.(lambda x.(f (f (f (f (f x)))))))"
+# str(run "pred (succ 0)");;
+- : string = "(lambda f.(lambda x.x))"
 ```
 
 ### Booleans

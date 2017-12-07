@@ -83,6 +83,7 @@ let encodings = [
     ("2", "(lambda f. lambda x.f(f x))");
     ("3", "(lambda f. lambda x.f(f(f x)))");
     ("succ", "(lambda n. lambda f. lambda x.f(n f x))");
+    ("pred", "(lambda n.lambda f. lambda x.n(lambda g.lambda h.h(g f))(lambda u.x)(lambda u.u))"); (* This is hard. It's normal if your brain hurts. Mine does. *)
     ("add", "(lambda m. lambda n. lambda f. lambda x. m f (n f x))");
     ("mult", "(lambda m. lambda n. lambda f. lambda x. m (n f) x)");
     ("true", "(lambda a. lambda b. a)");
