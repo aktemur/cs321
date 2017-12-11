@@ -1,7 +1,11 @@
 \documentclass[addpoints]{exam}
+\makeatletter
+\expandafter\providecommand\expandafter*\csname ver@framed.sty\endcsname
+{2003/07/21 v0.8a Simulated by exam}
+\makeatother
+\usepackage{framed}
 
 %\printanswers
-\noprintanswers
 
 \usepackage{amsmath,bigstrut,minted,url,graphicx,tikz,marvosym,rotating}
 \usepackage{ebproof}
@@ -663,15 +667,98 @@ let rec typeOf e tyEnv =
       but it is being used in place that expects a \mintinline{ocaml}{list}.
     \end{solutionbox}
 
-    %% \part
-    %% \begin{minted}{ocaml}
-    %%   let f id = (id 5, id true)
-    %% \end{minted}
-    %% \begin{solutionbox}{1cm}
-    %%   ERROR. Function parameter cannot be polymorphic.
-    %% \end{solutionbox}
+    \part
+    \begin{minted}{ocaml}
+      let f id = (id 5, id true)
+    \end{minted}
+    \begin{solutionbox}{1cm}
+      ERROR. Function parameter cannot be polymorphic.
+    \end{solutionbox}
+    
+
+    \part
+    \begin{minted}{ocaml}
+      let rec f lst =
+        match lst with
+        | [] -> 1
+        | x::xs -> (f x) * List.length xs 
+    \end{minted}
+    \begin{solutionbox}{1cm}
+      ERROR. Circular type constraint ($\alpha = \alpha~\textrm{list}$).
+    \end{solutionbox}
     
   \end{parts}
+
   
+  \question
+  Be prepared to answer basic questions regarding
+  co-variance and contra-variance,
+  in the style of the examples covered in the lecture and
+  the slides.
+
+  
+  \question
+  I wrote the following Java code:
+
+  {\small
+  \begin{minted}[linenos]{java}
+import java.util.*;
+
+class Fruit {
+    String getColor() { return "sdf"; }
+}
+
+class Apple extends Fruit {
+    String getJuice() { return "asd"; } 
+}
+
+public class Exam {
+    public static void addNewApple(List<Apple> apples) {
+        apples.add(new Apple());
+    }
+
+    public static void printColors(List<Fruit> fruits) {
+        for(Fruit f: fruits) {
+            System.out.println(f.getColor());
+        }
+    }
+
+    public static void main(String[] args) {
+        List<Apple> apples = new ArrayList<Apple>();
+        apples.add(new Apple());
+
+        List<Fruit> fruits = new ArrayList<Fruit>();
+        fruits.add(new Fruit());
+
+        addNewApple(fruits);
+        addNewApple(apples);
+
+        printColors(fruits);
+        printColors(apples);
+    }
+}
+  \end{minted}
+  }
+
+  But the compiler gives me the following type errors:
+
+  {\small
+\begin{verbatim}
+Exam.java:29: error: incompatible types: List<Fruit> cannot be converted to List<Apple>
+        addNewApple(fruits);
+                    ^
+Exam.java:33: error: incompatible types: List<Apple> cannot be converted to List<Fruit>
+        printColors(apples);
+                    ^
+\end{verbatim}
+  }
+  
+  I am frustrated. Please help me.
+  Use co-variance/contra-variance annotations
+  (i.e. upper/lower bounded wildcards)
+  to convince the compiler
+  that my code is OK to execute.
+  Justify your answer.
+
 \end{questions}
 \end{document}
