@@ -1,0 +1,128 @@
+\documentclass[addpoints]{exam}
+\makeatletter
+\expandafter\providecommand\expandafter*\csname ver@framed.sty\endcsname
+{2003/07/21 v0.8a Simulated by exam}
+\makeatother
+\usepackage{framed}
+
+%\printanswers
+
+\usepackage{amsmath,bigstrut,minted,url,graphicx,tikz,marvosym,rotating}
+\usepackage{ebproof}
+
+\pagestyle{headandfoot}
+\runningheadrule
+\firstpageheader{}{}{Page \thepage\ of \numpages}
+\runningheader{CS 321}{Sample Problems}{Page \thepage\ of \numpages}
+\firstpagefooter{}{}{}
+\runningfooter{}{}{}
+              
+\newcommand{\EJDG}[3]{#1 \vdash #2 \Rightarrow #3}
+\newcommand{\TJDG}[3]{#1 \vdash #2 : #3}
+\renewcommand{\L}[2]{\lambda #1.#2}
+
+\begin{document}
+
+\begin{center}
+{\Large \textbf{
+    Ozyegin University\\
+    CS 321 Programming Languages\\
+    Sample Problems on Lambda Calculus
+}}
+\end{center}
+
+\begin{questions}
+  \question
+  Using the encodings below, show that \textbf{mult 3 2} is \textbf{6}.
+  \begin{align*}
+    \textbf{0} & = (\L{f}{\L{x}{x}})\\
+    \textbf{1} & = (\L{f}{\L{x}{f x}})\\
+    \textbf{2} & = (\L{f}{\L{x}{f (f x)}})\\
+    \textbf{3} & = (\L{f}{\L{x}{f (f (f x))}})\\
+%    \textbf{succ} & = \L{n}{\L{f}{\L{x}{f (n f x)}}}\\
+%    \textbf{add} & = \L{m}{\L{n}{\L{f}{\L{x}{m f (n f x)}}}}\\
+    \textbf{mult} & = \L{m}{\L{n}{\L{f}{\L{x}{m (n f) x}}}}
+  \end{align*}
+
+  \begin{solutionbox}{12cm}
+  \begin{align*}
+    \textbf{mult 3 2} &
+     = (\L{m}{\L{n}{\L{f}{\L{x}{~m~(n f)~x}}}})~\textbf{3 2} & \\
+    & \Rightarrow (\L{n}{\L{f}{\L{x}{~\textbf{3}~(n f)~x}}})~\textbf{2}\\
+    & \Rightarrow \L{f}{\L{x}{~\textbf{3}~(\textbf{2}~f)~x}}\\
+    & = \L{f}{\L{x}{~\textbf{3}~((\L{f}{\L{x}{f (f x)}})~f)~x}} & \textrm{expanded \textbf{2}}\\
+    & = \L{f}{\L{x}{~\textbf{3}~(\underline{(\L{f}{\L{x}{f (f x)}})~f})~x}} & \textrm{$\beta$-reducing underlined term}\\
+    & \Rightarrow \L{f}{\L{x}{~\textbf{3}~(\L{x}{f (f x)})~x}} & \\
+    & = \L{f}{\L{x}{~(\L{f}{\L{x}{f (f (f x))}})~(\L{x}{f (f x)})~x}} & \textrm{expanded \textbf{3}}\\
+    & = \L{f}{\L{x}{~\underline{(\L{f}{\L{x}{f (f (f x))}})~(\L{x}{f (f x)})}~x}} & \textrm{$\beta$-reducing underlined term}\\
+    & \Rightarrow \L{f}{\L{x}{~(\L{x}{(\L{x}{f (f x)})~((\L{x}{f (f x)})~((\L{x}{f (f x)})~x))})~x}} & \\
+    & = \L{f}{\L{x}{~(\L{x}{(\L{x}{f (f x)})~((\L{x}{f (f x)})~(\underline{(\L{x}{f (f x)})~x}))})~x}} & \textrm{$\beta$-reducing underlined term}\\
+    & \Rightarrow \L{f}{\L{x}{~(\L{x}{(\L{x}{f (f x)})~((\L{x}{f (f x)})~(f (f x)))})~x}} & \\
+    & = \L{f}{\L{x}{~(\L{x}{(\L{x}{f (f x)})~(\underline{(\L{x}{f (f x)})~(f (f x))})})~x}} & \textrm{$\beta$-reducing underlined term}\\
+    & \Rightarrow \L{f}{\L{x}{~(\L{x}{(\L{x}{f (f x)})~(f (f (f (f x))))})~x}} & \\
+    & = \L{f}{\L{x}{~(\L{x}{\underline{(\L{x}{f (f x)})~(f (f (f (f x))))}})~x}} & \textrm{$\beta$-reducing underlined term}\\
+    & \Rightarrow \L{f}{\L{x}{~(\L{x}{(f (f (f (f (f (f x))))))})~x}} & \\
+    & = \L{f}{\L{x}{~\underline{(\L{x}{(f (f (f (f (f (f x))))))})~x}}} & \textrm{$\beta$-reducing underlined term}\\
+    & \Rightarrow \L{f}{\L{x}{(f (f (f (f (f (f x))))))}} & \\
+    & = \textbf{6}
+  \end{align*}
+  \end{solutionbox}
+
+
+  \newpage
+  \question
+  Reduce the following lambda expression to its normal form.
+
+  \[
+    (\L{f}{\L{m}{\L{p}{m\,(f\,m\,p)}}})\;(\L{y}{\L{z}{y\,z}})\;(\L{w}{w})
+  \]
+
+  \begin{solutionbox}{5cm}
+    \begin{align*}
+      & (\L{f}{\L{m}{\L{p}{m\,(f\,m\,p)}}})\;(\L{y}{\L{z}{y\,z}})\;(\L{w}{w})\\
+      & \Rightarrow (\L{m}{\L{p}{m\,((\L{y}{\L{z}{y\,z}})\,m\,p)}})\;(\L{w}{w})\\
+      & \Rightarrow \L{p}{(\L{w}{w})\,((\L{y}{\L{z}{y\,z}})\,(\L{w}{w})\,p)}\\
+      & \Rightarrow \L{p}{((\L{y}{\L{z}{y\,z}})\,(\L{w}{w})\,p)}\\
+      & \Rightarrow \L{p}{((\L{z}{(\L{w}{w})\,z})\,p)}\\
+      & \Rightarrow \L{p}{((\L{w}{w})\,p)}\\
+      & \Rightarrow \L{p}{p}\\
+    \end{align*}
+  \end{solutionbox}
+
+
+  \question
+  The following are the Church encodings for boolean values and conditional expression.
+  Write down an encoding for logical \emph{and}.
+
+  \begin{align*}
+    \textbf{true} & = \lambda a. \lambda b.~a \\
+    \textbf{false}& = \lambda a. \lambda b.~b \\
+    \textbf{if}   & = \lambda c. \lambda t. \lambda e.~c~t~e\\
+    \textbf{and}  & = \textrm{\fillin[ $\lambda p. \lambda q.~p~q~\textbf{false}$ ][3.5cm] }\\
+  \end{align*}
+  
+  \question
+  Reduce the following lambda term to its normal form. If a normal form
+  does not exist, show that the term does not converge.
+
+  \[
+  (\lambda x.\;\lambda y.\;x~(y~x))~(\lambda w.\;\lambda v.\;w)~(\lambda z.\;z)
+  \]
+
+
+  \question
+  Apply \textbf{one} step of beta reduction on the following lambda terms,
+  if possible. If there is no beta reduction possibility, write NORMAL FORM.
+
+  \begin{itemize}
+  \item $(\lambda x\,.\,x\,y\,z)\,a\,b\,c~\Rightarrow~$\fillin[ $(a\,y\,z)\,b\,c$ ][4cm]\\[1em]
+  \item $(\lambda w\,.\,\lambda p\,.\,p\,w)~\Rightarrow~$\fillin[ NORMAL FORM ][4cm]\\[1em]
+  \item $(\lambda x\,.\,\lambda y\,.\,x\,(y\,x))\,(\lambda w\,.\,\lambda v\,.\,w)\,(\lambda z\,.\,z)~\Rightarrow~$\fillin[ $(\lambda y\,.\,(\lambda w\,.\,\lambda v\,.\,w)\,(y\,(\lambda w\,.\,\lambda v\,.\,w)))\,(\lambda z\,.\,z)$ ][8cm]\\[1em]
+  \item $(\lambda z\,.\,z\,(\lambda k\,.\,k)\,m)~\Rightarrow~$\fillin[ NORMAL FORM ][4cm]\\[1em]
+  \item $(\lambda u\,.\,(\lambda x\,.\,x\,u)\,(\lambda y\,.\,u))~\Rightarrow~$\fillin[ $(\lambda u\,.\,(\lambda y\,.\,u)\,u)$ ][4cm]\\[1em]
+  \item $(\lambda n\,.\,n\,n)\,(\lambda n\,.\,n\,n)~\Rightarrow~$\fillin[ $(\lambda n\,.\,n\,n)\,(\lambda n\,.\,n\,n)$ ][4cm]\\[1em]
+  \item $(\lambda g\,.\,(\lambda h\,.\,h)\,g)~\Rightarrow~$\fillin[ $(\lambda g\,.\,g)$ ][4cm]\\[1em]
+  \end{itemize}
+
+\end{questions}
+\end{document}
