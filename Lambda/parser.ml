@@ -90,6 +90,7 @@ let encodings = [
     ("false", "(lambda a. lambda b. b)");
     ("if", "(lambda c. lambda t. lambda e. c t e)");
     ("isZero", "(lambda n. n (lambda x.(lambda a. lambda b. b)) (lambda a. lambda b. a))");
+    ("Y", "(lambda h.(lambda x.(lambda a. h(x x)a)) (lambda x.(lambda a.h(x x)a)))"); (* See PLC page 85 *)
   ];;
 
 (* parse: string -> exp *)

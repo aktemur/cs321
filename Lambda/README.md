@@ -18,7 +18,7 @@ $ ocaml
 # parse;;
 - : string -> expr = <fun>
 # run;;
-- : string -> expr = <fun>
+- : string -> string = <fun>
 # str;;
 - : expr -> string = <fun>
 # reduce;;
@@ -34,7 +34,7 @@ $ ocaml
 # parse "x (y z)";;           
 - : expr = App (Var "x", App (Var "y", Var "z"))
 # run "(lambda x.x)y";; 
-- : expr = Var "y"
+- : string = "y"
 # reduce (parse "(lambda x.x)y");;
 - : expr = Var "y"
 # str(reduce (parse "(lambda x.x)y"));;
@@ -81,20 +81,20 @@ Computation happens using the pure lambda syntax.
 # str(parse "succ (succ 2)");;
 - : string =
 "((lambda n.(lambda f.(lambda x.(f ((n f) x))))) ((lambda n.(lambda f.(lambda x.(f ((n f) x))))) (lambda f.(lambda x.(f (f x))))))"
-# str(run "succ (succ 2)");;
+# run "succ (succ 2)";;
 - : string = "(lambda f.(lambda x.(f (f (f (f x))))))"
-# str(run "add 2 3");;
+# run "add 2 3";;
 - : string = "(lambda f.(lambda x.(f (f (f (f (f x)))))))"
-# str(run "mult 2 3");;
+# run "mult 2 3";;
 - : string = "(lambda f.(lambda x.(f (f (f (f (f (f x))))))))"
-# str(run "mult (mult 2 3) (add 1 3)");;
+# run "mult (mult 2 3) (add 1 3)";;
 - : string =
 "(lambda f.(lambda x.(f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f x))))))))))))))))))))))))))"
-# str(run "pred 3");; (* predecessor function that returns the preceding number *)
+# run "pred 3";; (* predecessor function that returns the preceding number *)
 - : string = "(lambda f.(lambda x.(f (f x))))"
-# str(run "pred (mult 2 3)");;
+# run "pred (mult 2 3)";;
 - : string = "(lambda f.(lambda x.(f (f (f (f (f x)))))))"
-# str(run "pred (succ 0)");;
+# run "pred (succ 0)";;
 - : string = "(lambda f.(lambda x.x))"
 ```
 
@@ -110,10 +110,26 @@ Computation happens using the pure lambda syntax.
 # str(parse "isZero");;
 - : string =
 "(lambda n.((n (lambda x.(lambda a.(lambda b.b)))) (lambda a.(lambda b.a))))"
-# str(run "isZero 0");;
+# run "isZero 0";;
 - : string = "(lambda a.(lambda b.a))"
-# str(run "isZero 2");;
+# run "isZero 2";;
 - : string = "(lambda a.(lambda b.b))"
-# str(run "if (isZero (mult 3 0)) (add 2 3) (succ 1)");;
+# run "if (isZero (mult 3 0)) (add 2 3) (succ 1)";;
 - : string = "(lambda f.(lambda x.(f (f (f (f (f x)))))))"
+```
+
+### Recursion
+
+Below, we compute 3! and 4!.
+
+```ocaml
+# run "(Y (lambda fact.lambda m.if (isZero m)
+                                1
+                                (mult m (fact(pred m))))) 3";;
+- : string = "(lambda f.(lambda x.(f (f (f (f (f (f x))))))))"
+# run "(Y (lambda fact.lambda m.if (isZero m)
+                                1
+                                (mult m (fact(pred m))))) (succ 3)";; 
+- : string =
+"(lambda f.(lambda x.(f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f (f x))))))))))))))))))))))))))"
 ```

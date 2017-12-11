@@ -6,7 +6,7 @@
 open Printf
 
 let run code =
-  eval (parse code)
+  str(eval (parse code))
 ;;
 
   (*
