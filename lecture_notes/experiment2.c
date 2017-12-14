@@ -25,9 +25,9 @@ void test2() {
   printf("&a = %p, &p = %p, &k = %p \n", &a, &p, &k);
 }
 
-void square(int x, int *r) {
+void square(int x, int *res) {
   int sq = x * x;
-  *r = sq;
+  *res = sq;
 }
 
 void test3() {
@@ -37,25 +37,25 @@ void test3() {
   printf("r = %d\n", r);
 }
 
-void fact(int n, int *r) {
+void fact(int n, int *res) {
   if (n == 0) {
-    *r = 1;
+    *res = 1;
   } else {
     int rs;
     fact(n-1, &rs);
-    *r = n * rs;
+    *res = n * rs;
   }
 }
 
 void test4() {
   int k = 5;
   int r;
-  fact(5, &r);
+  fact(k, &r);
   printf("r = %d\n", r);
 }
 
 int main() {
-  test2();
+  test3();
 
   return 0;
 }
