@@ -1,0 +1,492 @@
+\documentclass[addpoints]{exam}
+\makeatletter
+\expandafter\providecommand\expandafter*\csname ver@framed.sty\endcsname
+{2003/07/21 v0.8a Simulated by exam}
+\makeatother
+\usepackage{framed}
+
+\printanswers
+
+\usepackage{amsmath,bigstrut,minted,url,graphicx,tikz,marvosym,rotating}
+\usepackage{ebproof}
+
+\pagestyle{headandfoot}
+\runningheadrule
+\firstpageheader{}{}{Page \thepage\ of \numpages}
+\runningheader{CS 321}{Sample Problems}{Page \thepage\ of \numpages}
+\firstpagefooter{}{}{}
+\runningfooter{}{}{}
+              
+\newcommand{\EJDG}[3]{#1 \vdash #2 \Rightarrow #3}
+\newcommand{\TJDG}[3]{#1 \vdash #2 : #3}
+\renewcommand{\L}[2]{\lambda #1.#2}
+
+\begin{document}
+
+\begin{center}
+{\Large \textbf{
+    Ozyegin University\\
+    CS 321 Programming Languages\\
+    Sample Problems on Imperative Programming
+}}
+\end{center}
+
+\begin{questions}
+  \question
+  (PLC Ex. 7.2.(i))
+  Write a C program containing a function
+  \texttt{void arrsum(int n, int arr[], int *sump)}
+  that computes and returns the sum of the first
+  \texttt{n} elements of the given array \texttt{arr}.
+  The result must be returned through the \texttt{sump} pointer.
+
+  \begin{solutionbox}{4cm}
+  \begin{minted}{c}
+    void arrsum(int n, int arr[], int *sump) {
+      int sum = 0;
+      for (int i = 0; i < n; i++) {
+        sum += arr[i];
+      }
+      *sump = sum;
+    }
+  \end{minted}
+  \end{solutionbox}
+
+  \question
+  (PLC Ex. 7.2.(ii))
+  Write a C program containing a function
+  \texttt{void squares(int n, int arr[])} that,
+  given \texttt{n} and an array \texttt{arr} of
+  length \texttt{n} or more, fills \texttt{arr[i]}
+  with \texttt{i*i} for \texttt{i} = $0,\ldots,n-1$.
+
+  \begin{solutionbox}{3.5cm}
+  \begin{minted}{c}
+    void squares(int n, int arr[]) {
+      for (int i = 0; i < n; i++) {
+        arr[i] = i * i;
+      }
+    }
+  \end{minted}
+  \end{solutionbox}
+
+  \question
+  Write a \textbf{recursive} C function 
+  \texttt{void fib(int n, int *res)}
+  that computes the \texttt{n}$^{th}$ fibonacci number
+  and returns it through the
+  \texttt{res} pointer.
+
+  \begin{solutionbox}{6cm}
+  \begin{minted}{c}
+    void fib(int n, int *res) {
+      if (n == 0 || n == 1) {
+        *res = 1;
+      } else {
+        int f1;
+        fib(n-1, &f1);
+        int f2;
+        fib(n-2, &f2);
+        *res = f1 + f2;
+      }
+    }
+  \end{minted}
+  \end{solutionbox}
+
+  \newpage
+  \question
+  Assuming that the environment and the store are initially empty,
+  give a possible environment and store at the
+  end of the following piece of C program.
+  \begin{minted}{c}
+    int n = 38;
+    int a[3] = {5, 9, 13};
+    int *p;
+    p = &a[1];
+    *p = n;
+    *(p+1) = a[0]*2;
+    p = &n;
+    p++;
+  \end{minted}
+
+  \begin{solutionbox}{6cm}
+  \begin{verbatim}
+  * ENV
+    n: 70
+    a: 74
+    p: 75
+
+  * STORE
+    --------------------------------------
+      | 38 |  5 | 38 | 10 | 71 | 71 |    
+    --------------------------------------
+        70   71   72   73   74   75      
+  \end{verbatim}
+  \end{solutionbox}
+
+  \question
+  In C++, parameters of functions that are declared using the 
+  \& operator are passed by reference.
+  What is the output of the C++-like program below?
+  \begin{minted}{cpp}
+  void main() {
+    int a[3] = {3, 7, 10};
+    int m = 56;
+    int n = 99;
+    mystery(m, n, a);
+    print m, n, a[0], a[1], a[2]
+  }
+  void mystery(int x, int &y, int a[]) {
+    a[0] += 1;
+    int temp = x;
+    x = y;
+    y = temp;
+  }
+  \end{minted}
+
+  \begin{solutionbox}{1cm}
+  56 56 4 7 10
+  \end{solutionbox}
+
+  \newpage
+  \question
+  An array can be represented as a pointer.
+  For instance, the array definition
+  \begin{verbatim}
+     int a[4] = {12, 13, 14, 15}; \end{verbatim}
+  can be represented using the following env/store:
+{\small
+  \begin{verbatim}
+     Env =>      a: 54
+
+     Store =>    --------------------------------------
+                     | 12 | 13 | 14 | 15 | 50 |    |    
+                 --------------------------------------
+                       50   51   52   53   54   55  
+  \end{verbatim}}   
+  Explain how you can use this representation to find the length
+  of an array.
+
+  \begin{solutionbox}{1.5cm}
+  Find the difference between the address and the value
+  of the array variable. That is,\\
+  \texttt{\&a - a}
+  \end{solutionbox}
+
+  \question
+  A C-like program is given below.
+  \begin{verbatim}
+m = &n;         // A
+*m = k[2];      // B
+k--; m++;       // C
+*k = *m;        // D
+m[2] = n;       // E
+  \end{verbatim}
+  Starting from the env. and store given below,
+  show the environment and the store 
+  after \textbf{each} statement.
+{\small
+\begin{verbatim}
+Env =>      m: 50, n: 51, k:56
+
+Store =>    -----------------------------------------
+               | 48 | 53 | 49 | 17 | 41 | 50 | 52 |  
+            -----------------------------------------
+                 50   51   52   53   54   55   56   
+\end{verbatim}}
+
+
+  \begin{solution}
+After A:
+{\small
+\begin{verbatim}
+Env =>      m: 50, n: 51, k:56
+
+Store =>    -----------------------------------------
+               | 51 | 53 | 49 | 17 | 41 | 50 | 52 |  
+            -----------------------------------------
+                 50   51   52   53   54   55   56   
+\end{verbatim}}
+
+After B:
+{\small
+\begin{verbatim}
+Env =>      m: 50, n: 51, k:56
+
+Store =>    -----------------------------------------
+               | 51 | 41 | 49 | 17 | 41 | 50 | 52 |  
+            -----------------------------------------
+                 50   51   52   53   54   55   56   
+\end{verbatim}}
+
+After C:
+{\small
+\begin{verbatim}
+Env =>      m: 50, n: 51, k:56
+
+Store =>    -----------------------------------------
+               | 52 | 41 | 49 | 17 | 41 | 50 | 51 |  
+            -----------------------------------------
+                 50   51   52   53   54   55   56   
+\end{verbatim}}
+
+After D:
+{\small
+\begin{verbatim}
+Env =>      m: 50, n: 51, k:56
+
+Store =>    -----------------------------------------
+               | 52 | 49 | 49 | 17 | 41 | 50 | 51 |  
+            -----------------------------------------
+                 50   51   52   53   54   55   56   
+\end{verbatim}}
+
+After E:
+{\small
+\begin{verbatim}
+Env =>      m: 50, n: 51, k:56
+
+Store =>    -----------------------------------------
+               | 52 | 49 | 49 | 17 | 49 | 50 | 51 |  
+            -----------------------------------------
+                 50   51   52   53   54   55   56   
+\end{verbatim}}
+  \end{solution}
+
+  \newpage
+  \question
+  In C++, parameters of functions that are declared using the \& operator are passed by reference.
+  A C++ program is given below.
+
+  {\small
+    \begin{minipage}[t]{0.30\textwidth}
+    \begin{minted}{c++}
+    void main() {
+      int a[3] = {8, 15, 6};
+      int b = 88;
+      int c = 33;
+      // A
+      f(b, &c, a);
+      // I
+    }
+    \end{minted}
+    \end{minipage}
+    \begin{minipage}[t]{0.40\textwidth}
+    \begin{minted}{c++}
+    void f(int &x, int *y, int z[]) {
+      // B
+      *y = *y + 1;
+      // C
+      y = &(z[1]);
+      // D
+      y++; x++;
+      // E
+      *y = x + 10;
+      // F
+      x = *y;
+      // G
+      z[2] = -1;
+      // H
+    }
+    \end{minted}
+    \end{minipage}
+  }
+
+  The \emph{environment} maps names to locations;
+  the \emph{store} maps locations to values. 
+  Suppose the environment and the store at point A are as given below.
+  Give possible environment and store configurations for points B--I.
+  It is OK to show the changes only.
+  
+  \texttt{A}:  
+  \begin{tabular}{|r c|}
+    \multicolumn{2}{c}{Env}\\\hline
+    a: & 53 \\
+    b: & 54 \\
+    c: & 55 \\
+    \hline
+  \end{tabular}
+  \hspace{1cm}
+  \begin{tabular}{c|c|c|c|c|c|c|c|c|c|c|c|c|c}
+    \multicolumn{11}{c}{Store}\\
+    \hline
+    \multicolumn{1}{c}{} & \multicolumn{1}{c}{50} & \multicolumn{1}{c}{51} & \multicolumn{1}{c}{52}
+    & \multicolumn{1}{c}{53} & \multicolumn{1}{c}{54} & \multicolumn{1}{c}{55}
+    & \multicolumn{1}{c}{56} & \multicolumn{1}{c}{57} & \multicolumn{1}{c}{58}
+    & \multicolumn{1}{c}{59} & \multicolumn{1}{c}{60} & \multicolumn{1}{c}{61} & \\\hline
+    &  \bigstrut 8 &  15 &  6 & 50 & 88 & 33 &  &  &  &  &  &  \\[1ex]\hline
+  \end{tabular}
+  \hfill
+  \strut
+  \vspace{0.1cm}
+  
+  \texttt{B}:  
+  \begin{tabular}{|r c|}
+    \hline
+    x: & \ifprintanswers 54 \else \strut\hspace{0.4cm} \fi\\
+    y: & \ifprintanswers 56 \else \strut\hspace{0.4cm} \fi\\
+    z: & \ifprintanswers 57 \else \strut\hspace{0.4cm} \fi\\
+    \hline
+  \end{tabular}
+  \hspace{1cm}
+  \begin{tabular}{c|c|c|c|c|c|c|c|c|c|c|c|c|c}
+    \hline
+    \multicolumn{1}{c}{} & \multicolumn{1}{c}{50} & \multicolumn{1}{c}{51} & \multicolumn{1}{c}{52}
+    & \multicolumn{1}{c}{53} & \multicolumn{1}{c}{54} & \multicolumn{1}{c}{55}
+    & \multicolumn{1}{c}{56} & \multicolumn{1}{c}{57} & \multicolumn{1}{c}{58}
+    & \multicolumn{1}{c}{59} & \multicolumn{1}{c}{60} & \multicolumn{1}{c}{61} & \\\hline
+    &  \bigstrut   &    &    &   &   &  & \ifprintanswers 55 \fi & \ifprintanswers 50 \fi &   &  &  & \\[1ex]\hline
+  \end{tabular}
+  \hfill
+  \strut
+  \vspace{0.1cm}
+  
+  \texttt{C}:  
+  \begin{tabular}{|r c|}
+    \hline
+    x: & \strut\hspace{0.4cm} \\
+    y: &  \\
+    z: &  \\
+    \hline
+  \end{tabular}
+  \hspace{1cm}
+  \begin{tabular}{c|c|c|c|c|c|c|c|c|c|c|c|c|c}
+    \hline
+    \multicolumn{1}{c}{} & \multicolumn{1}{c}{50} & \multicolumn{1}{c}{51} & \multicolumn{1}{c}{52}
+    & \multicolumn{1}{c}{53} & \multicolumn{1}{c}{54} & \multicolumn{1}{c}{55}
+    & \multicolumn{1}{c}{56} & \multicolumn{1}{c}{57} & \multicolumn{1}{c}{58}
+    & \multicolumn{1}{c}{59} & \multicolumn{1}{c}{60} & \multicolumn{1}{c}{61} & \\\hline
+    &  \bigstrut   &    &    &   &   & \ifprintanswers 34 \fi  &  &   &   &  &  & \\[1ex]\hline
+  \end{tabular}
+  \hfill
+  \strut
+  \vspace{0.1cm}
+  
+  \texttt{D}:  
+  \begin{tabular}{|r c|}
+    \hline
+    x: & \strut\hspace{0.4cm} \\
+    y: &  \\
+    z: &  \\
+    \hline
+  \end{tabular}
+  \hspace{1cm}
+  \begin{tabular}{c|c|c|c|c|c|c|c|c|c|c|c|c|c}
+    \hline
+    \multicolumn{1}{c}{} & \multicolumn{1}{c}{50} & \multicolumn{1}{c}{51} & \multicolumn{1}{c}{52}
+    & \multicolumn{1}{c}{53} & \multicolumn{1}{c}{54} & \multicolumn{1}{c}{55}
+    & \multicolumn{1}{c}{56} & \multicolumn{1}{c}{57} & \multicolumn{1}{c}{58}
+    & \multicolumn{1}{c}{59} & \multicolumn{1}{c}{60} & \multicolumn{1}{c}{61} & \\\hline
+    &  \bigstrut   &    &    &   &   &  & \ifprintanswers 51 \fi &  &   &  &  & \\[1ex]\hline
+  \end{tabular}
+  \hfill
+  \strut
+  \vspace{0.1cm}
+  
+  \texttt{E}:  
+  \begin{tabular}{|r c|}
+    \hline
+    x: & \strut\hspace{0.4cm} \\
+    y: &  \\
+    z: &  \\
+    \hline
+  \end{tabular}
+  \hspace{1cm}
+  \begin{tabular}{c|c|c|c|c|c|c|c|c|c|c|c|c|c}
+    \hline
+    \multicolumn{1}{c}{} & \multicolumn{1}{c}{50} & \multicolumn{1}{c}{51} & \multicolumn{1}{c}{52}
+    & \multicolumn{1}{c}{53} & \multicolumn{1}{c}{54} & \multicolumn{1}{c}{55}
+    & \multicolumn{1}{c}{56} & \multicolumn{1}{c}{57} & \multicolumn{1}{c}{58}
+    & \multicolumn{1}{c}{59} & \multicolumn{1}{c}{60} & \multicolumn{1}{c}{61} & \\\hline
+    &  \bigstrut   &    &    &   & \ifprintanswers 89 \fi &  & \ifprintanswers 52 \fi &  &   &  &  & \\[1ex]\hline
+  \end{tabular}
+  \hfill
+  \strut
+  \vspace{0.1cm}
+  
+  \texttt{F}:  
+  \begin{tabular}{|r c|}
+    \hline
+    x: & \strut\hspace{0.4cm} \\
+    y: &  \\
+    z: &  \\
+    \hline
+  \end{tabular}
+  \hspace{1cm}
+  \begin{tabular}{c|c|c|c|c|c|c|c|c|c|c|c|c|c}
+    \hline
+    \multicolumn{1}{c}{} & \multicolumn{1}{c}{50} & \multicolumn{1}{c}{51} & \multicolumn{1}{c}{52}
+    & \multicolumn{1}{c}{53} & \multicolumn{1}{c}{54} & \multicolumn{1}{c}{55}
+    & \multicolumn{1}{c}{56} & \multicolumn{1}{c}{57} & \multicolumn{1}{c}{58}
+    & \multicolumn{1}{c}{59} & \multicolumn{1}{c}{60} & \multicolumn{1}{c}{61} & \\\hline
+    &  \bigstrut   &    & \ifprintanswers 99 \fi &   &   &   &  &   &   &  &  & \\[1ex]\hline
+  \end{tabular}
+  \hfill
+  \strut
+  \vspace{0.1cm}
+  
+  \texttt{G}:  
+  \begin{tabular}{|r c|}
+    \hline
+    x: & \strut\hspace{0.4cm} \\
+    y: &  \\
+    z: &  \\
+    \hline
+  \end{tabular}
+  \hspace{1cm}
+  \begin{tabular}{c|c|c|c|c|c|c|c|c|c|c|c|c|c}
+    \hline
+    \multicolumn{1}{c}{} & \multicolumn{1}{c}{50} & \multicolumn{1}{c}{51} & \multicolumn{1}{c}{52}
+    & \multicolumn{1}{c}{53} & \multicolumn{1}{c}{54} & \multicolumn{1}{c}{55}
+    & \multicolumn{1}{c}{56} & \multicolumn{1}{c}{57} & \multicolumn{1}{c}{58}
+    & \multicolumn{1}{c}{59} & \multicolumn{1}{c}{60} & \multicolumn{1}{c}{61} & \\\hline
+    &  \bigstrut   &    &    &   & \ifprintanswers 99 \fi &   &  &   &  &  &  & \\[1ex]\hline
+  \end{tabular}
+  \hfill
+  \strut
+  \vspace{0.1cm}
+  
+  \texttt{H}:  
+  \begin{tabular}{|r c|}
+    \hline
+    x: & \strut\hspace{0.4cm} \\
+    y: &  \\
+    z: &  \\
+    \hline
+  \end{tabular}
+  \hspace{1cm}
+  \begin{tabular}{c|c|c|c|c|c|c|c|c|c|c|c|c|c}
+    \hline
+    \multicolumn{1}{c}{} & \multicolumn{1}{c}{50} & \multicolumn{1}{c}{51} & \multicolumn{1}{c}{52}
+    & \multicolumn{1}{c}{53} & \multicolumn{1}{c}{54} & \multicolumn{1}{c}{55}
+    & \multicolumn{1}{c}{56} & \multicolumn{1}{c}{57} & \multicolumn{1}{c}{58}
+    & \multicolumn{1}{c}{59} & \multicolumn{1}{c}{60} & \multicolumn{1}{c}{61} & \\\hline
+    &  \bigstrut   &    & \ifprintanswers -1 \fi &   &   &   &  &   &   &  &  & \\[1ex]\hline
+  \end{tabular}
+  \hfill
+  \strut
+  \vspace{0.1cm}
+  
+  \texttt{I}:
+  \begin{tabular}{|r c|}
+    \hline
+    a: & \ifprintanswers 53 \else \strut\hspace{0.4cm} \fi\\
+    b: & \ifprintanswers 54 \else \strut\hspace{0.4cm} \fi\\
+    c: & \ifprintanswers 55 \else \strut\hspace{0.4cm} \fi\\
+    \hline
+  \end{tabular}
+  \hspace{1cm}
+  \begin{tabular}{c|c|c|c|c|c|c|c|c|c|c|c|c|c}
+    \hline
+    \multicolumn{1}{c}{} & \multicolumn{1}{c}{50} & \multicolumn{1}{c}{51} & \multicolumn{1}{c}{52}
+    & \multicolumn{1}{c}{53} & \multicolumn{1}{c}{54} & \multicolumn{1}{c}{55}
+    & \multicolumn{1}{c}{56} & \multicolumn{1}{c}{57} & \multicolumn{1}{c}{58}
+    & \multicolumn{1}{c}{59} & \multicolumn{1}{c}{60} & \multicolumn{1}{c}{61} & \\\hline
+    &  \bigstrut   &    &    &   &   &   &  &   &   &  &  & \\[1ex]\hline
+  \end{tabular}
+  \hfill
+  \strut
+
+
+\end{questions}
+\end{document}
