@@ -1,0 +1,127 @@
+\documentclass[addpoints]{exam}
+\makeatletter
+\expandafter\providecommand\expandafter*\csname ver@framed.sty\endcsname
+{2003/07/21 v0.8a Simulated by exam}
+\makeatother
+\usepackage{framed}
+
+%\printanswers
+
+\usepackage{amsmath,bigstrut,minted,url,graphicx,tikz,marvosym,rotating}
+\usepackage{ebproof}
+
+\pagestyle{headandfoot}
+\runningheadrule
+\firstpageheader{}{}{Page \thepage\ of \numpages}
+\runningheader{CS 321}{Sample Problems}{Page \thepage\ of \numpages}
+\firstpagefooter{}{}{}
+\runningfooter{}{}{}
+              
+\newcommand{\EJDG}[3]{#1 \vdash #2 \Rightarrow #3}
+\newcommand{\TJDG}[3]{#1 \vdash #2 : #3}
+\renewcommand{\L}[2]{\lambda #1.#2}
+
+\begin{document}
+
+\begin{center}
+{\Large \textbf{
+    Ozyegin University\\
+    CS 321 Programming Languages\\
+    Sample Problems on Garbage Collection
+}}
+\end{center}
+
+\begin{questions}
+  \question
+  Which garbage collection algorithm would work the best for the following
+  piece of Java program? Explain why. Remember that Strings in Java are immutable
+  objects (i.e. once created, you may not modify them).
+  
+  \begin{minted}{java}
+    String concat(String[] ss) {
+      // Assume ss is very long
+      String res = "";
+      for (int i = 0; i < ss.length; i++)
+          res += ss[i];
+      return res;
+    }
+  \end{minted}
+
+  Suggest a better (i.e. more efficient) way to implement this code.
+  Explain why it would be more efficient.
+
+  \begin{solutionbox}{4.5cm}
+    This program creates a lot of short-lived objects.
+    Each iteration of the loop creates a String object that becomes garbage
+    in the next iteration.
+    For this program, ``two space stop and copy'' probably works the best because
+    this algorithm does not need to touch the many String objects that die young.
+    Also, these young and dead objects may have caused fragmentation in the heap.
+    ``Two space stop and copy'' fixes that problem as well.
+
+    (Automatic) reference counting is likely to perform well, too.
+    This is because there are no cyclic links between the dead objects.
+    Furthermore, there are no links to other objects from the String objects;
+    hence, deallocation of a String object does not cause a ripple effect. 
+  \end{solutionbox}
+
+  \question
+  Write a piece of program (in Java or C++)
+  that would cause a memory leak
+  if reference counting were used
+  as the garbage collection technique.
+
+  \begin{solutionbox}{7.5cm}
+    \begin{minted}{Java}
+      class Node {
+        int item;
+        Node next;
+      }
+      ...
+      Node node1 = new Node();
+      Node node2 = new Node();
+      node1.next = node2;
+      node2.next = node1;
+      node1 = null;
+      node2 = null;
+      ...
+    \end{minted}
+    The code above creates a cycle between two objects, and then loses the
+    pointers to these objects from the stack. 
+  \end{solutionbox}
+
+  \newpage
+  \question
+  \strut
+  \begin{parts}
+    \part Suppose I have a program where I create a long linked list structure with no cycles,
+    and then set my pointer to the head of the list to null,
+    so the head becomes unreachable.
+    Which garbage collection algorithm would perform the best for this case?
+    Justify by explaining what drawbacks the other algorithms have for this case.
+    \vfill
+
+    \part Which garbage collection algorithm is likely to improve cache utilization? Why?
+    \vfill
+
+    \part Suppose I have a computer with small heap memory.
+    If I am to make a choice between mark-and-sweep and two-space-stop-and-copy algorithms,
+    which one should I choose? Why?
+    \vfill
+
+    \part Suppose I have a program where I create a lot of temporary (i.e. short-lived)
+    objects of various sizes scattered (i.e. \emph{sa\c{c}{\i}lm{\i}\c{s}, yay{\i}lm\i\c{s}})
+    all over the memory.
+    If I am to make a choice between mark-and-sweep and two-space-stop-and-copy algorithms,
+    which one should I choose? Why?
+    \vfill
+
+    \part Suppose I have a program where I create many long-lived and large objects and arrays.
+    If I am to make a choice between mark-and-sweep and two-space-stop-and-copy algorithms,
+    which one should I choose? Why?
+    \vfill
+  \end{parts}
+  
+  
+\end{questions}
+\end{document}
