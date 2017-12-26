@@ -1,0 +1,177 @@
+\documentclass[addpoints]{exam}
+\makeatletter
+\expandafter\providecommand\expandafter*\csname ver@framed.sty\endcsname
+{2003/07/21 v0.8a Simulated by exam}
+\makeatother
+\usepackage{framed}
+
+%\printanswers
+
+\usepackage{amsmath,bigstrut,minted,url,graphicx,tikz,marvosym,rotating}
+\usepackage{ebproof}
+
+\pagestyle{headandfoot}
+\runningheadrule
+\firstpageheader{}{}{Page \thepage\ of \numpages}
+\runningheader{CS 321}{Sample Problems}{Page \thepage\ of \numpages}
+\firstpagefooter{}{}{}
+\runningfooter{}{}{}
+              
+\newcommand{\EJDG}[3]{#1 \vdash #2 \Rightarrow #3}
+\newcommand{\TJDG}[3]{#1 \vdash #2 : #3}
+\renewcommand{\L}[2]{\lambda #1.#2}
+
+\begin{document}
+
+\begin{center}
+{\Large \textbf{
+    Ozyegin University\\
+    CS 321 Programming Languages\\
+    Sample Problems on Streams
+}}
+\end{center}
+
+Ee use the following definition of streams:
+
+\begin{minted}{ocaml}
+  type 'a stream = Cons of 'a * (unit -> 'a stream)
+\end{minted}
+
+\begin{questions}
+  \question
+  Define the stream of square numbers.
+  That is, the stream of 1, 4, 9, 16, 25, 36, \ldots
+
+  \begin{solutionbox}{3cm}
+    {\footnotesize
+    \begin{minted}{ocaml}
+      let rec squaresFrom n = Cons(n*n, fun() -> squaresFrom (n+1))
+
+      let squares = squaresFrom 1
+    \end{minted}
+    }
+  \end{solutionbox}
+
+
+  \question
+  Implement a \texttt{cycle} function that takes a list
+  \texttt{lst} and converts it to an infinite stream as if \texttt{lst}
+  were a circular list.
+
+  {\footnotesize
+    \begin{minted}{ocaml}
+      # cycle;;
+      val cycle : 'a list -> 'a stream = <fun>
+      # let letters = cycle ['a'; 'b'; 'c'; 'd'];;
+      val letters : char stream = Cons ('a', <fun>)
+      # take 15 letters;;
+      - : char list =
+      ['a'; 'b'; 'c'; 'd'; 'a'; 'b'; 'c'; 'd'; 'a'; 'b'; 'c'; 'd'; 'a'; 'b'; 'c']
+      # take 10 (cycle ['a']);;
+      - : char list = ['a'; 'a'; 'a'; 'a'; 'a'; 'a'; 'a'; 'a'; 'a'; 'a']  
+    \end{minted}
+    }
+  \begin{solutionbox}{3cm}
+    {\footnotesize
+    \begin{minted}{ocaml}
+        let cycle lst =                                                       
+          let rec helper items = 
+            match items with
+            | [] -> helper lst
+            | x::xs -> Cons(x, fun () -> helper xs)
+          in helper lst
+    \end{minted}
+    }
+  \end{solutionbox}
+  
+  \question
+  Implement the \texttt{takeWhile} function
+  for streams that
+  takes a predicate \texttt{p}, a stream \texttt{s},
+  and returns as a list all the elements of \texttt{s} 
+  until there is an element of \texttt{s} that does not satisfy \texttt{p}.
+  \textbf{Extra: give an efficient tail-recursive solution.}
+
+  {\footnotesize
+    \begin{minted}{ocaml}
+# takeWhile (fun n -> n < 100) squares;;
+- : int list = [1; 4; 9; 16; 25; 36; 49; 64; 81]
+    \end{minted}
+  }
+  \begin{solutionbox}{3cm}
+    {\footnotesize
+    \begin{minted}{ocaml}
+let takeWhile p st =
+  let rec helper st acc =
+    let x = head st
+    in if p x then helper (tail st) (x::acc) else acc
+  in List.rev(helper st [])
+    \end{minted}
+    }
+  \end{solutionbox}
+
+  \newpage
+  \question
+  Write an OCaml function \texttt{enumerate} that takes a
+  stream and enumerates its elements starting from 0.
+  
+  {\footnotesize
+    \begin{minted}{ocaml}
+      # enumerate;;
+      - : 'a stream -> (int * 'a) stream = <fun>
+      # let letters = cycle ['e'; 'n'; 'u'; 'm'];;
+      val letters : char stream = Cons ('a', <fun>)
+      # take 10 letters;;                         
+      - : char list = ['e'; 'n'; 'u'; 'm'; 'e'; 'n'; 'u'; 'm'; 'e'; 'n']
+      # take 10 (enumerate letters);;
+      - : (int * char) list =
+      [(0, 'e'); (1, 'n'); (2, 'u'); (3, 'm'); (4, 'e'); (5, 'n'); (6, 'u');
+        (7, 'm'); (8, 'e'); (9, 'n')]
+    \end{minted}
+  }
+  \begin{solutionbox}{3cm}
+    {\footnotesize
+    \begin{minted}{ocaml}
+let enumerate st =
+  let rec helper n st =
+    Cons((n, head st), fun() -> helper (n+1) (tail st))
+  in helper 0 st
+    \end{minted}
+    }
+  \end{solutionbox}
+
+  \question
+  Write an OCaml function named \texttt{merge} that combines two streams
+  into one by taking elements alternately. (i.e. \emph{bi ordan bi burdan})
+  
+  {\footnotesize
+    \begin{minted}{ocaml}
+      # merge;;
+      - : 'a stream -> 'a stream -> 'a stream = <fun>
+      # let evens = filter (fun n -> n mod 2 = 0) naturals;;
+      val evens : int stream = Cons (0, <fun>)
+      # take 10 evens;;
+      - : int list = [0; 2; 4; 6; 8; 10; 12; 14; 16; 18]
+      # let odds = filter (fun n -> n mod 2 = 1) naturals;;
+      val odds : int stream = Cons (1, <fun>)
+      # take 10 odds;;                                     
+      - : int list = [1; 3; 5; 7; 9; 11; 13; 15; 17; 19]
+      # take 10 (merge odds evens);;
+      - : int list = [1; 0; 3; 2; 5; 4; 7; 6; 9; 8]
+      # take 10 (merge (cycle ['a']) (cycle ['b']));;
+      - : char list = ['a'; 'b'; 'a'; 'b'; 'a'; 'b'; 'a'; 'b'; 'a'; 'b']
+    \end{minted}
+  }  
+  \begin{solutionbox}{3cm}
+    {\footnotesize
+    \begin{minted}{ocaml}
+let rec merge st1 st2 =
+  Cons(head st1, fun() ->
+                 Cons(head st2, fun() ->
+                                merge (tail st1) (tail st2)))
+    \end{minted}
+    }
+  \end{solutionbox}
+
+\end{questions}
+\end{document}
