@@ -94,32 +94,43 @@
   \question
   \strut
   \begin{parts}
-    \part Suppose I have a program where I create a long linked list structure with no cycles,
-    and then set my pointer to the head of the list to null,
-    so the head becomes unreachable.
-    Which garbage collection algorithm would perform the best for this case?
-    Justify by explaining what drawbacks the other algorithms have for this case.
-    \vfill
+    %\part Suppose I have a program where I create a long linked list structure with no cycles,
+    %and then set my pointer to the head of the list to null,
+    %so the head becomes unreachable.
+    %Which garbage collection algorithm would perform the best for this case?
+    %Justify by explaining what drawbacks the other algorithms have for this case.
+    %\begin{solutionbox}{3cm}
+    %  
+    %\end{solutionbox}
 
     \part Which garbage collection algorithm is likely to improve cache utilization? Why?
-    \vfill
+    \begin{solutionbox}{2cm}
+      Two-space stop and copy, because it compacts the live objects.
+    \end{solutionbox}
 
     \part Suppose I have a computer with small heap memory.
     If I am to make a choice between mark-and-sweep and two-space-stop-and-copy algorithms,
     which one should I choose? Why?
-    \vfill
+    \begin{solutionbox}{2cm}
+      Mark-and-sweep. Because two-space stop and copy uses only half of the available memory.
+    \end{solutionbox}
 
     \part Suppose I have a program where I create a lot of temporary (i.e. short-lived)
     objects of various sizes scattered (i.e. \emph{sa\c{c}{\i}lm{\i}\c{s}, yay{\i}lm\i\c{s}})
     all over the memory.
     If I am to make a choice between mark-and-sweep and two-space-stop-and-copy algorithms,
     which one should I choose? Why?
-    \vfill
+    \begin{solutionbox}{2cm}
+      Two-space stop and copy, because it visits the live objects only and compacts them for better
+      utilization of the cache.
+    \end{solutionbox}
 
     \part Suppose I have a program where I create many long-lived and large objects and arrays.
     If I am to make a choice between mark-and-sweep and two-space-stop-and-copy algorithms,
     which one should I choose? Why?
-    \vfill
+    \begin{solutionbox}{2cm}
+      Mark-and-sweep, because two-space stop and copy would have to copy a lot of data.
+    \end{solutionbox}
   \end{parts}
   
   
