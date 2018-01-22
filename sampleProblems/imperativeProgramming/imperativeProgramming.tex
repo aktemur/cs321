@@ -5,7 +5,7 @@
 \makeatother
 \usepackage{framed}
 
-\printanswers
+%\printanswers
 
 \usepackage{amsmath,bigstrut,minted,url,graphicx,tikz,marvosym,rotating}
 \usepackage{ebproof}
@@ -109,21 +109,108 @@
     p++;
   \end{minted}
 
-  \begin{solutionbox}{6cm}
-  \begin{verbatim}
-  * ENV
-    n: 70
-    a: 74
-    p: 75
+  \begin{solution}
+    After the third line, that is, after the declarations are handled, we may have
+    and environment and a store such as below, where the value of \mintinline{c}{p} is
+    garbage (i.e. it's not set, therefore it could be anything). 
+    
+    \begin{tabular}{|r c|}
+      \multicolumn{2}{c}{Env}\\\hline
+      n: & 70 \\
+      a: & 74 \\
+      p: & 75 \\
+      \hline
+    \end{tabular}
+    \hspace{1cm}
+    \begin{tabular}{c|c|c|c|c|c|c|c}
+      \multicolumn{8}{c}{Store}\\
+      \hline
+      \multicolumn{1}{c}{} & \multicolumn{1}{c}{70} & \multicolumn{1}{c}{71} & \multicolumn{1}{c}{72} & \multicolumn{1}{c}{73} & \multicolumn{1}{c}{74} & \multicolumn{1}{c}{75} & \\\hline
+      &  \bigstrut 38 &  5 &  9 & 13 & 71 & XX & \\[1ex]\hline
+    \end{tabular}
 
-  * STORE
-    --------------------------------------
-      | 38 |  5 | 38 | 10 | 71 | 71 |    
-    --------------------------------------
-        70   71   72   73   74   75      
-  \end{verbatim}
-  \end{solutionbox}
+    Executing the statement \mintinline{c}{p = &a[1];} gives us
 
+    \begin{tabular}{|r c|}
+      \hline
+      n: & 70 \\
+      a: & 74 \\
+      p: & 75 \\
+      \hline
+    \end{tabular}
+    \hspace{1cm}
+    \begin{tabular}{c|c|c|c|c|c|c|c}
+      \hline
+      \multicolumn{1}{c}{} & \multicolumn{1}{c}{70} & \multicolumn{1}{c}{71} & \multicolumn{1}{c}{72} & \multicolumn{1}{c}{73} & \multicolumn{1}{c}{74} & \multicolumn{1}{c}{75} & \\\hline
+      &  \bigstrut 38 &  5 &  9 & 13 & 71 & \textbf{72} & \\[1ex]\hline
+    \end{tabular}
+    
+    Executing the statement \mintinline{c}{*p = n;} gives us
+
+    \begin{tabular}{|r c|}
+      \hline
+      n: & 70 \\
+      a: & 74 \\
+      p: & 75 \\
+      \hline
+    \end{tabular}
+    \hspace{1cm}
+    \begin{tabular}{c|c|c|c|c|c|c|c}
+      \hline
+      \multicolumn{1}{c}{} & \multicolumn{1}{c}{70} & \multicolumn{1}{c}{71} & \multicolumn{1}{c}{72} & \multicolumn{1}{c}{73} & \multicolumn{1}{c}{74} & \multicolumn{1}{c}{75} & \\\hline
+      &  \bigstrut 38 &  5 & \textbf{38} & 13 & 71 & 72 & \\[1ex]\hline
+    \end{tabular}
+
+    Executing the statement \mintinline{c}{*(p+1) = a[0]*2;} gives us
+
+    \begin{tabular}{|r c|}
+      \hline
+      n: & 70 \\
+      a: & 74 \\
+      p: & 75 \\
+      \hline
+    \end{tabular}
+    \hspace{1cm}
+    \begin{tabular}{c|c|c|c|c|c|c|c}
+      \hline
+      \multicolumn{1}{c}{} & \multicolumn{1}{c}{70} & \multicolumn{1}{c}{71} & \multicolumn{1}{c}{72} & \multicolumn{1}{c}{73} & \multicolumn{1}{c}{74} & \multicolumn{1}{c}{75} & \\\hline
+      &  \bigstrut 38 &  5 & 38 & \textbf{10} & 71 & 72 & \\[1ex]\hline
+    \end{tabular}
+
+    Executing the statement \mintinline{c}{p = &n;} gives us
+
+    \begin{tabular}{|r c|}
+      \hline
+      n: & 70 \\
+      a: & 74 \\
+      p: & 75 \\
+      \hline
+    \end{tabular}
+    \hspace{1cm}
+    \begin{tabular}{c|c|c|c|c|c|c|c}
+      \hline
+      \multicolumn{1}{c}{} & \multicolumn{1}{c}{70} & \multicolumn{1}{c}{71} & \multicolumn{1}{c}{72} & \multicolumn{1}{c}{73} & \multicolumn{1}{c}{74} & \multicolumn{1}{c}{75} & \\\hline
+      &  \bigstrut 38 &  5 & 38 & 10 & 71 & \textbf{70} & \\[1ex]\hline
+    \end{tabular}
+
+    Executing the statement \mintinline{c}{p++;} gives us
+
+    \begin{tabular}{|r c|}
+      \hline
+      n: & 70 \\
+      a: & 74 \\
+      p: & 75 \\
+      \hline
+    \end{tabular}
+    \hspace{1cm}
+    \begin{tabular}{c|c|c|c|c|c|c|c}
+      \hline
+      \multicolumn{1}{c}{} & \multicolumn{1}{c}{70} & \multicolumn{1}{c}{71} & \multicolumn{1}{c}{72} & \multicolumn{1}{c}{73} & \multicolumn{1}{c}{74} & \multicolumn{1}{c}{75} & \\\hline
+      &  \bigstrut 38 &  5 & 38 & 10 & 71 & \textbf{71} & \\[1ex]\hline
+    \end{tabular}
+  \end{solution}
+
+  \newpage
   \question
   In C++, parameters of functions that are declared using the 
   \& operator are passed by reference.
@@ -148,7 +235,6 @@
   56 56 4 7 10
   \end{solutionbox}
 
-  \newpage
   \question
   An array can be represented as a pointer.
   For instance, the array definition
